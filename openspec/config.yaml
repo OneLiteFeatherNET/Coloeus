@@ -1,0 +1,42 @@
+schema: spec-driven
+
+# Project context: the architecture and product principles of the Coloeus economy service. A proposal,
+# spec, design or task list must not contradict these. Changing a principle is itself an OpenSpec
+# change that edits this block and says why.
+context: |
+  Coloeus is the economy service of the OneLiteFeather Minecraft network: one central, stateless
+  service in the OLF Kubernetes cluster, serving Paper (Vault bridge), Velocity, Minestom and other
+  services. Modules: backend (Micronaut 5, Java 25), client (Java client), paper (Vault bridge),
+  velocity (Velocity proxy plugin), web (staff web interface).
+
+  Principles (non-negotiable unless a change explicitly amends this block):
+  1. Money lives in Postgres (CloudNativePG) and is migrated with Flyway. The ledger is an
+     append-only double-entry journal: no row is updated or deleted, corrections are new entries.
+  2. Every write is atomic and idempotent: each mutating request carries an Idempotency-Key, and a
+     repeat with the same key returns the stored result without writing again.
+  3. Amounts are JSR 354 MonetaryAmount (Moneta Money, DECIMAL128). They are converted only at three
+     boundaries: the database, JSON and the Vault bridge. Inside the service no amount is a double
+     or a plain BigDecimal.
+  4. The backend is stateless: every replica can serve any request; no session or cache state is
+     kept in a replica.
+  5. Service-to-service auth is Entra ID client credentials with the app role `Coloeus.Client`.
+     Staff web login is Entra SSO with the roles `Coloeus.Moderator` and `Coloeus.Admin`.
+  6. No plugin messaging between services. Services talk over HTTP; events are not relayed through
+     Minecraft plugin channels.
+  7. Telemetry is OpenTelemetry (traces, metrics and logs over OTLP).
+  8. Config is env-var driven with local-dev defaults inline in application.yml (${ENV_VAR:default}).
+  9. Tests follow F.I.R.S.T.: unit tests use in-memory fakes and an injected java.time.Clock; database
+     integration tests use Testcontainers and are tagged `integration`.
+
+  Commits and PR titles follow Conventional Commits (release-please).
+
+rules:
+  proposal:
+    - Name the Conventional Commits type and scope the change ships under; a change mixing types is two changes.
+  specs:
+    - Write requirements in EARS form with Given/When/Then scenarios.
+  design:
+    - Record rejected alternatives.
+  tasks:
+    - The last task opens the code pull request under the proposal's Conventional Commits title.
+    - Checkboxes are ticked in a follow-up pull request, never in the code pull request.

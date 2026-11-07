@@ -1,0 +1,18 @@
+# Local development only. Production runs in Kubernetes with CloudNativePG.
+# docker compose -f docker/docker-compose.yml up -d
+services:
+  postgres:
+    image: postgres:18
+    container_name: 'postgres_coloeus'
+    environment:
+      POSTGRES_DB: coloeus
+      POSTGRES_USER: coloeus
+      POSTGRES_PASSWORD: coloeus
+    ports:
+      - "5432:5432"
+    volumes:
+      # PostgreSQL 18 images keep their data below /var/lib/postgresql, so mount the parent directory.
+      - postgres-data:/var/lib/postgresql
+
+volumes:
+  postgres-data:

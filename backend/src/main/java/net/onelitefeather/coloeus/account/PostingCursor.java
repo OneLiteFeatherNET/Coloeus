@@ -11,14 +11,14 @@ import net.onelitefeather.coloeus.request.RequestValues;
  * Position in the posting history of an account: the created time and id of the last posting that was returned.
  * Clients see it as an opaque base64url string.
  */
-record PostingCursor(Instant createdAt, UUID postingId) {
+public record PostingCursor(Instant createdAt, UUID postingId) {
 
-    String encode() {
+    public String encode() {
         String text = createdAt + "|" + postingId;
         return Base64.getUrlEncoder().withoutPadding().encodeToString(text.getBytes(StandardCharsets.UTF_8));
     }
 
-    static PostingCursor decode(String value) {
+    public static PostingCursor decode(String value) {
         try {
             String text = new String(Base64.getUrlDecoder().decode(value), StandardCharsets.UTF_8);
             int separator = text.indexOf('|');

@@ -56,6 +56,7 @@ public final class TransactionRequestParser {
             case MINT -> mintLegs(body, currencies);
             case BURN -> burnLegs(body, currencies);
             case BATCH -> batchLegs(body, currencies);
+            case RESET, ADJUST -> throw RequestValues.invalid("kind must be TRANSFER, MINT, BURN or BATCH");
         };
         return new TransactionCommand(
                 kind,
@@ -119,11 +120,16 @@ public final class TransactionRequestParser {
 
     private static TransactionKind kind(JsonNode body) {
         String value = requiredText(body, "kind");
+        TransactionKind kind;
         try {
-            return TransactionKind.valueOf(value);
+            kind = TransactionKind.valueOf(value);
         } catch (IllegalArgumentException e) {
             throw RequestValues.invalid("kind must be TRANSFER, MINT, BURN or BATCH");
         }
+        if (kind == TransactionKind.RESET || kind == TransactionKind.ADJUST) {
+            throw RequestValues.invalid("kind must be TRANSFER, MINT, BURN or BATCH");
+        }
+        return kind;
     }
 
     /** An account reference: an account id, {@code {"player": uuid}} or {@code {"system", "currency"}}. */

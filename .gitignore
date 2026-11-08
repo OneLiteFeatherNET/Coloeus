@@ -22,3 +22,9 @@ run/
 
 ### macOS ###
 .DS_Store
+
+### Web (Nuxt staff UI) ###
+web/node_modules/
+web/.nuxt/
+web/.output/
+web/dist

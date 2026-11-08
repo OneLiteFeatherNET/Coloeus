@@ -24,6 +24,10 @@ public final class AmountColumns {
      * Reads a stored value. It is rendered with exactly the currency's fraction digits; a stored value with more
      * digits than the currency allows is corrupt data and fails instead of being rounded.
      */
+    public static Money fromColumn(String stored, CurrencyUnit currency) {
+        return fromColumn(new BigDecimal(stored), currency);
+    }
+
     public static Money fromColumn(BigDecimal stored, CurrencyUnit currency) {
         BigDecimal exact = stored.setScale(Amounts.fractionDigits(currency), RoundingMode.UNNECESSARY);
         return Money.of(exact, currency, Amounts.CONTEXT);

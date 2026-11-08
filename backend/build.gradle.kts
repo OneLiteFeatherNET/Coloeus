@@ -1,3 +1,5 @@
+import org.gradle.language.jvm.tasks.ProcessResources
+
 plugins {
     alias(libs.plugins.micronaut.application)
     alias(libs.plugins.micronaut.aot)

@@ -10,7 +10,7 @@ Coloeus is the economy service of the OneLiteFeather Minecraft network. One cent
 | `client`   | Java client library for the Coloeus API.                             |
 | `paper`    | Paper plugin that bridges Vault economy calls to Coloeus.            |
 | `velocity` | Velocity proxy plugin for economy commands and reporting.            |
-| `web`      | Staff web interface for moderators and administrators.               |
+| `web`      | Staff web UI (Nuxt 4) and its Nitro server, the BFF. Not a Gradle module; see below. |
 
 ## Development
 
@@ -50,6 +50,57 @@ message names the variable.
 | `DATASOURCES_DEFAULT_PASSWORD` | yes   | none                       | Database password (for local runs: the one in `docker/docker-compose.yml`).                                                                      |
 | `COLOEUS_MOJANG_URL`        | no       | `https://api.mojang.com`   | Base URL of the Mojang profile API used for name lookups (read timeout 2 s).            |
 | `PORT`                      | no       | `8080`                     | HTTP port of the service.                                                               |
+
+### Staff API
+
+The staff API under `/v1/staff` serves the staff web interface (`web/`). Its Nitro server is the only client: it signs
+the staff members in, keeps their sessions and forwards their calls. The backend keeps no session, reads no cookie and
+serves no UI file. Each call carries the bearer token of the staff member, a delegated user token of the staff web app
+registration with the scope `Coloeus.Access`.
+
+- Client-credential tokens are refused on `/v1/staff` with 401 `UNAUTHORIZED`, as are tokens without `oid`.
+- Reads (`GET`) need the app role `Coloeus.Moderator` or `Coloeus.Admin`. Writes (`POST`, `PUT`) need `Coloeus.Admin`;
+  a moderator's write is answered 403 `FORBIDDEN_ROLE` before its body is read.
+- Every write needs an `Idempotency-Key` header. Keys are scoped per staff member (`staff:<oid>`), so two staff members
+  may use the same key.
+- The actor of a write is the `oid` of the token and its display name the `name` claim. Money writes are journal
+  transactions of the kinds `RESET` and `ADJUST`; every staff write also has a row in `staff_action`.
+- The staff web app's client id is never a registered ledger client. Its tokens therefore cannot write on `/v1`
+  (`CLIENT_NOT_REGISTERED`). Never register that client id, neither through `/v1/clients` nor through `/v1/staff/clients`.
+
+The endpoints and JSON shapes are specified in `openspec/changes/add-admin-web/specs/staff-api/spec.md`; the paths of
+`/v1/staff` are part of the OpenAPI document at `/swagger/coloeus.yml`. The staff API reads no setting of its own.
+
+### Staff web UI (`web/`)
+
+`web` is a pnpm project, not a Gradle module: the backend builds without Node. The staff UI runs as its own
+service, `harbor.onelitefeather.dev/onelitefeather/coloeus-admin`, whose Nitro server logs staff in with Entra
+(confidential client, PKCE), keeps the session in Dragonfly and forwards staff calls to the backend's `/v1/staff`.
+
+```shell
+cd web
+pnpm install --frozen-lockfile
+pnpm lint && pnpm typecheck && pnpm test && pnpm build
+docker build -t coloeus-admin:dev .
+```
+
+The server reads these variables and refuses to start when one is missing or too short (the session secret needs
+32 bytes). Development defaults exist only for `COLOEUS_BACKEND_URL` (`http://localhost:8080`) and
+`COLOEUS_WEB_STORAGE_URL` (`redis://localhost:6379`):
+
+| Variable                      | Meaning                                                       |
+|-------------------------------|---------------------------------------------------------------|
+| `COLOEUS_WEB_CLIENT_ID`       | Client id of the Entra app registration "Coloeus Admin Web".  |
+| `COLOEUS_WEB_CLIENT_SECRET`   | Client secret of that registration.                           |
+| `COLOEUS_WEB_BASE_URL`        | Public origin, for example `https://coloeus.apps.onelite.feather`. |
+| `COLOEUS_WEB_SESSION_SECRET`  | At least 32 bytes. Rotating it ends every session.            |
+| `COLOEUS_WEB_STORAGE_URL`     | Dragonfly URL; the ACL user is limited to `staff:*`.          |
+| `COLOEUS_TENANT_ID`           | Entra tenant of the staff accounts.                           |
+| `COLOEUS_AUDIENCE`            | Client id of the API registration that exposes `Coloeus.Access`. |
+| `COLOEUS_BACKEND_URL`         | Base URL of the backend.                                      |
+
+The web client must never be registered in the ledger's client registry: a delegated staff token of a registered
+client could write around the staff audit log.
 
 ## Paper (Vault bridge)
 

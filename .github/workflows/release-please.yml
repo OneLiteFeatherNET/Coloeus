@@ -60,6 +60,28 @@ jobs:
       req-concurrent: "4"
     secrets: inherit
 
+  # The staff web UI is its own service: a Nuxt 4 application served by its Nitro server (Node 24). Its image is built
+  # from web/ of the checked-out ref with its own Dockerfile (pnpm install from the lockfile, then the build), and is
+  # pushed with the same tags and signature as the backend image. No backend build step is involved.
+  docker-admin:
+    name: Build admin image
+    needs: release-please
+    permissions:
+      contents: read
+      id-token: write   # keyless cosign signing via GitHub OIDC
+    if: |
+      always() &&
+      ((github.event_name == 'push' && needs.release-please.outputs.release_created == 'true') ||
+       github.event_name == 'workflow_dispatch')
+    uses: OneLiteFeatherNET/workflows/.github/workflows/docker-publish.yml@v2.9.1
+    with:
+      image-name: "onelitefeather/coloeus-admin"
+      version: ${{ github.event_name == 'workflow_dispatch' && inputs.docker_version || needs.release-please.outputs.version }}
+      context: "web"
+      blob-chunk: "90000000"   # ~90 MB, under the 100 MB Cloudflare cap
+      req-concurrent: "4"
+    secrets: inherit
+
   # The Paper plugin jar is shaded. Servers download it from the GitHub release next to the Vault plugin, so it is
   # attached to the release rather than published as an image.
   paper-jar:

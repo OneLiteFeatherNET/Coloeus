@@ -12,27 +12,31 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * SQL for {@code idempotency_key}. The key row is inserted in the booking transaction and completed with the
- * transaction id and the response before it commits.
+ * SQL for {@code idempotency_key}. A key is unique per scope ({@link IdempotencyScope}). The key row is inserted in the
+ * write's database transaction and completed with the transaction id and the response before it commits.
  */
 @Singleton
-class IdempotencyRepository {
+public class IdempotencyRepository {
 
     static final String UNIQUE_VIOLATION = "23505";
 
     /** A stored key: the hash of the request that created it and the response it was answered with. */
-    record StoredKey(String requestHash, String response) {
+    public record StoredKey(String requestHash, String response) {
     }
 
-    /** Inserts the key row. A key already stored by another booking raises {@link IdempotencyKeyTaken}. */
-    void insertKey(Connection connection, UUID clientId, String key, String requestHash, Instant expiresAt)
+    /**
+     * Inserts the key row. A key already stored in the scope raises {@link IdempotencyKeyTaken}. The client id is null
+     * for staff scopes.
+     */
+    void insertKey(Connection connection, String scope, UUID clientId, String key, String requestHash, Instant expiresAt)
             throws SQLException {
         try (PreparedStatement insert = connection.prepareStatement(
-                "INSERT INTO idempotency_key (client_id, key, request_hash, expires_at) VALUES (?, ?, ?, ?)")) {
-            insert.setObject(1, clientId);
-            insert.setString(2, key);
-            insert.setString(3, requestHash);
-            insert.setTimestamp(4, Timestamp.from(expiresAt));
+                "INSERT INTO idempotency_key (scope, client_id, key, request_hash, expires_at) VALUES (?, ?, ?, ?, ?)")) {
+            insert.setString(1, scope);
+            insert.setObject(2, clientId);
+            insert.setString(3, key);
+            insert.setString(4, requestHash);
+            insert.setTimestamp(5, Timestamp.from(expiresAt));
             insert.executeUpdate();
         } catch (SQLException e) {
             if (UNIQUE_VIOLATION.equals(e.getSQLState())) {
@@ -42,22 +46,22 @@ class IdempotencyRepository {
         }
     }
 
-    void complete(Connection connection, UUID clientId, String key, UUID transactionId, String response)
+    void complete(Connection connection, String scope, String key, UUID transactionId, String response)
             throws SQLException {
         try (PreparedStatement update = connection.prepareStatement(
-                "UPDATE idempotency_key SET transaction_id = ?, response = ?::jsonb WHERE client_id = ? AND key = ?")) {
+                "UPDATE idempotency_key SET transaction_id = ?, response = ?::jsonb WHERE scope = ? AND key = ?")) {
             update.setObject(1, transactionId);
             update.setString(2, response);
-            update.setObject(3, clientId);
+            update.setString(3, scope);
             update.setString(4, key);
             update.executeUpdate();
         }
     }
 
-    Optional<StoredKey> find(Connection connection, UUID clientId, String key) throws SQLException {
+    Optional<StoredKey> find(Connection connection, String scope, String key) throws SQLException {
         try (PreparedStatement select = connection.prepareStatement(
-                "SELECT request_hash, response::text AS response FROM idempotency_key WHERE client_id = ? AND key = ?")) {
-            select.setObject(1, clientId);
+                "SELECT request_hash, response::text AS response FROM idempotency_key WHERE scope = ? AND key = ?")) {
+            select.setString(1, scope);
             select.setString(2, key);
             try (ResultSet rows = select.executeQuery()) {
                 if (!rows.next()) {

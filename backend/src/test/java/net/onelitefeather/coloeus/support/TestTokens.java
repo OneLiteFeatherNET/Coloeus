@@ -39,6 +39,13 @@ public final class TestTokens implements AutoCloseable {
     public static final UUID ADMIN_APP = UUID.fromString("00000000-0000-4000-8000-0000000000a1");
     public static final UUID MODERATOR_APP = UUID.fromString("00000000-0000-4000-8000-0000000000d1");
 
+    /** The Entra application id of the staff web client: the {@code azp} of its delegated tokens. Never registered. */
+    public static final UUID WEB_APP = UUID.fromString("00000000-0000-4000-8000-0000000000b1");
+
+    /** The object ids (the {@code oid} claim) of the staff members the tests sign in. */
+    public static final String STAFF_ADMIN_OID = "00000000-0000-4000-8000-0000000000e1";
+    public static final String STAFF_MODERATOR_OID = "00000000-0000-4000-8000-0000000000e2";
+
     private static final long VALID_UNTIL = 4_102_444_800L;
     private static final long EXPIRED_AT = 946_684_800L;
     private static final long ISSUED_AT = 1_767_225_600L;
@@ -99,6 +106,25 @@ public final class TestTokens implements AutoCloseable {
 
     public String moderator() {
         return token().azp(MODERATOR_APP).roles(Roles.MODERATOR).sign();
+    }
+
+    /**
+     * A delegated token of a staff member, as the staff web client gets it: scope {@code Coloeus.Access}, the object id
+     * and display name of the user, and the app roles.
+     */
+    public String staff(String oid, String name, String... roles) {
+        return token().azp(WEB_APP).claim("scp", "Coloeus.Access").claim("oid", oid).claim("name", name)
+                .roles(roles).sign();
+    }
+
+    /** A delegated token of the staff administrator of the tests. */
+    public String staffAdmin() {
+        return staff(STAFF_ADMIN_OID, "Alex Admin", Roles.ADMIN);
+    }
+
+    /** A delegated token of the staff moderator of the tests. */
+    public String staffModerator() {
+        return staff(STAFF_MODERATOR_OID, "Mia Moderator", Roles.MODERATOR);
     }
 
     /** A token under construction, starting from a valid client token. */

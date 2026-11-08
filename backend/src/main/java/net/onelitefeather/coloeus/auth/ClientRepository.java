@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -48,6 +49,22 @@ public class ClientRepository {
             statement.setString(2, displayName);
             statement.setTimestamp(3, Timestamp.from(createdAt));
             statement.executeUpdate();
+        }
+    }
+
+    Optional<ClientRecord> find(Connection connection, UUID clientId) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT client_id, display_name, created_at FROM client WHERE client_id = ?")) {
+            statement.setObject(1, clientId);
+            try (ResultSet rows = statement.executeQuery()) {
+                if (!rows.next()) {
+                    return Optional.empty();
+                }
+                return Optional.of(new ClientRecord(
+                        rows.getObject("client_id", UUID.class),
+                        rows.getString("display_name"),
+                        rows.getTimestamp("created_at").toInstant()));
+            }
         }
     }
 

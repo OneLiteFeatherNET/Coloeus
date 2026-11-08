@@ -164,3 +164,33 @@ The codes below are stable. A new code is added here in the same change that use
 - Title: Name lookup is unavailable
 - Meaning: The name is not in the register and the Mojang profile API failed or did not answer in time. The service
   stores nothing and answers no guess; retry later.
+
+## SESSION_REQUIRED
+
+- Status: 401
+- Title: Staff session is required
+- Meaning: A request under `/admin/api` has no valid staff session: the cookie is missing, the session expired (8 hours after the login or 30 minutes idle), or it was ended by logout. The staff UI sends the person to the login. Answered by the Nitro server of the staff UI, never by the backend.
+
+## CSRF_INVALID
+
+- Status: 403
+- Title: CSRF check failed
+- Meaning: A staff write (`POST`, `PUT`, `DELETE` under `/admin/api`, or the logout) lacks the `X-CSRF-Token` header of its session, or its `Origin` header is not the address of the staff UI. Nothing is forwarded to the backend. Answered by the Nitro server of the staff UI.
+
+## NOT_FOUND
+
+- Status: 404
+- Title: Endpoint is not found
+- Meaning: A path under `/admin/api` names no endpoint of the staff API for this method. Nothing is forwarded to the backend. Answered by the Nitro server of the staff UI.
+
+## NOTHING_TO_RESET
+
+- Status: 409
+- Title: Nothing to reset
+- Meaning: A reset found no positive balance in the requested currency or currencies. Nothing is written.
+
+## INTERNAL
+
+- Status: 500
+- Title: Internal error
+- Meaning: An unexpected failure happened on the server, or a backend could not be reached or did not answer in time. The `detail` names no cause, table, host or secret; the request may be retried, and a write is safe to retry with the same `Idempotency-Key`.

@@ -25,7 +25,7 @@ public final class LedgerDatabase {
         try (Connection connection = postgres.createConnection("");
              var statement = connection.createStatement()) {
             statement.execute("TRUNCATE posting, transaction, balance, idempotency_key, account, "
-                    + "client_grant, client, player_name, currency");
+                    + "client_grant, client, player_name, currency, staff_action");
         }
     }
 }

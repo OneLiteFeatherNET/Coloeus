@@ -135,6 +135,15 @@ class TransactionAuthorizationIntegrationTest extends LedgerApiIntegrationTest {
     }
 
     @Test
+    void aStaffTokenOfTheWebClientCannotWriteOnTheLedger() {
+        HttpClientResponseException failure = refusal(client,
+                post(TOKENS.staffAdmin(), "staff-on-ledger", mint(ALICE, "5.00")));
+
+        assertProblem(failure, HttpStatus.FORBIDDEN, ProblemCode.CLIENT_NOT_REGISTERED);
+        assertEquals(0L, transactionCount(), "the web client is never a ledger client, so nothing is stored");
+    }
+
+    @Test
     void unregisteredClientPostAnswers403ClientNotRegistered() {
         HttpClientResponseException failure = refusal(client,
                 post(TOKENS.clientOf(UNREGISTERED_APP), "unregistered-post", mint(ALICE, "5.00")));

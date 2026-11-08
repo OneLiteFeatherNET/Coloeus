@@ -4,17 +4,10 @@ import io.micronaut.json.JsonMapper;
 import io.micronaut.json.tree.JsonNode;
 import jakarta.inject.Singleton;
 import java.io.IOException;
-import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
 import net.onelitefeather.coloeus.auth.Caller;
 import net.onelitefeather.coloeus.auth.GrantService;
 import net.onelitefeather.coloeus.currency.CurrencyService;
-import net.onelitefeather.coloeus.persistence.JdbcTransactions;
-import net.onelitefeather.coloeus.problem.ProblemCode;
-import net.onelitefeather.coloeus.problem.ProblemException;
 
 /**
  * Books transactions idempotently. The key row and the booking share one database transaction, so a key exists
@@ -27,28 +20,21 @@ public class TransactionService {
     static final Duration RETENTION = Duration.ofDays(7);
     static final String PATH = "/v1/transactions";
 
-    private static final int ATTEMPTS = 3;
-
-    private final JdbcTransactions transactions;
     private final GrantService grants;
-    private final IdempotencyRepository idempotency;
+    private final IdempotentWriter writer;
     private final BookingService booking;
     private final RequestHash requestHash;
     private final CurrencyService currencies;
     private final JsonMapper json;
-    private final Clock clock;
 
-    public TransactionService(JdbcTransactions transactions, GrantService grants,
-                              IdempotencyRepository idempotency, BookingService booking, RequestHash requestHash,
-                              CurrencyService currencies, JsonMapper json, Clock clock) {
-        this.transactions = transactions;
+    public TransactionService(GrantService grants, IdempotentWriter writer, BookingService booking,
+                              RequestHash requestHash, CurrencyService currencies, JsonMapper json) {
         this.grants = grants;
-        this.idempotency = idempotency;
+        this.writer = writer;
         this.booking = booking;
         this.requestHash = requestHash;
         this.currencies = currencies;
         this.json = json;
-        this.clock = clock;
     }
 
     /**
@@ -60,34 +46,12 @@ public class TransactionService {
         TransactionCommand command = TransactionRequestParser.parse(body, currencies::lookup);
         String hash = requestHash.of("POST", PATH, body);
         String metadataJson = write(command.metadata());
-        UUID clientId = caller.clientId();
-        for (int attempt = 1; attempt <= ATTEMPTS; attempt++) {
-            Instant now = clock.instant();
-            try {
-                return transactions.inTransaction(connection -> {
-                    // The key row references the client row, so an unregistered client is refused before the key.
-                    grants.requireRegistered(connection, caller);
-                    idempotency.insertKey(connection, clientId, key, hash, now.plus(RETENTION));
+        return writer.write(IdempotencyScope.client(caller.clientId()), caller.clientId(), key, hash, RETENTION,
+                connection -> grants.requireRegistered(connection, caller),
+                (connection, now) -> {
                     TransactionResponse booked = booking.book(connection, caller, command, now, metadataJson);
-                    String answer = write(booked);
-                    idempotency.complete(connection, clientId, key, booked.id(), answer);
-                    return answer;
+                    return new IdempotentWriter.Outcome(booked.id(), write(booked));
                 });
-            } catch (IdempotencyKeyTaken taken) {
-                Optional<IdempotencyRepository.StoredKey> stored =
-                        transactions.read(connection -> idempotency.find(connection, clientId, key));
-                if (stored.isEmpty()) {
-                    // The first booking rolled back after the key was taken; this attempt may book now.
-                    continue;
-                }
-                if (!stored.get().requestHash().equals(hash)) {
-                    throw ProblemException.of(ProblemCode.IDEMPOTENCY_CONFLICT,
-                            "the idempotency key " + key + " was used with another request");
-                }
-                return stored.get().response();
-            }
-        }
-        throw new IllegalStateException("idempotency key " + key + " has neither a booking nor a stored answer");
     }
 
     private String write(Object value) {

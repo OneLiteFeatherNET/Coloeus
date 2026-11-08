@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/OneLiteFeatherNET/Coloeus/compare/v0.3.0...v0.4.0) (2026-11-08)
+
+
+### Features
+
+* **admin:** adopt material design 3 in the staff ui ([#20](https://github.com/OneLiteFeatherNET/Coloeus/issues/20)) ([3bc190a](https://github.com/OneLiteFeatherNET/Coloeus/commit/3bc190a32d9dbee90d35ee73be31b950451d420f))
+
 ## [0.3.0](https://github.com/OneLiteFeatherNET/Coloeus/compare/v0.2.3...v0.3.0) (2026-11-08)
 
 

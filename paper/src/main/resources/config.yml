@@ -1,0 +1,17 @@
+# Coloeus Vault bridge. Every value can also be set by an environment variable, which wins when it is not blank.
+# Each key names its variable in the comment above it. The secret belongs in the environment.
+
+# Base URL of the Coloeus API, for example https://coloeus.apps.onelite.feather. COLOEUS_URL
+url: ""
+
+# Entra tenant of the Coloeus API (GUID or domain). COLOEUS_TENANT_ID
+tenant-id: ""
+
+# Client id of this server's Entra app registration. COLOEUS_CLIENT_ID
+client-id: ""
+
+# Secret of this server's Entra app registration. COLOEUS_CLIENT_SECRET
+client-secret: ""
+
+# Scope of the access token, api://<client id of the Coloeus API>/.default. COLOEUS_AUTH_SCOPE
+auth-scope: "api://e6ba3e14-7b03-4792-b6aa-d963f776bd0c/.default"

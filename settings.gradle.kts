@@ -42,10 +42,20 @@ dependencyResolutionManagement {
         }
         // Velocity and Paper APIs for the velocity and paper modules are published here.
         maven("https://repo.papermc.io/repository/maven-public/")
+        // The Vault API (economy interface) for the paper module is published on jitpack only.
+        maven("https://jitpack.io") { name = "jitpack" }
     }
     versionCatalogs {
         create("libs") {
             version("micronaut", "5.0.2")
+            version("gson", "2.13.2")
+            version("paper", "26.1.2.build.74-stable")
+            version("vaultApi", "1.7")
+            version("shadow", "9.6.1")
+
+            library("gson", "com.google.code.gson", "gson").versionRef("gson")
+            library("paper-api", "io.papermc.paper", "paper-api").versionRef("paper")
+            library("vault-api", "com.github.MilkBowl", "VaultAPI").versionRef("vaultApi")
 
             version("moneta", "1.4.5")
             version("money-api", "1.1")
@@ -59,6 +69,7 @@ dependencyResolutionManagement {
 
             plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
             plugin("micronaut.aot", "io.micronaut.aot").versionRef("micronaut")
+            plugin("shadow", "com.gradleup.shadow").versionRef("shadow")
         }
     }
 }

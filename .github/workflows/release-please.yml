@@ -60,6 +60,37 @@ jobs:
       req-concurrent: "4"
     secrets: inherit
 
+  # The Paper plugin jar is shaded. Servers download it from the GitHub release next to the Vault plugin, so it is
+  # attached to the release rather than published as an image.
+  paper-jar:
+    name: Attach Paper plugin jar
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RELEASE_VERSION: ${{ needs.release-please.outputs.version }}
+      RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+    steps:
+      - name: Checkout the release tag
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+      - name: Build the Paper plugin jar
+        env:
+          ONELITEFEATHER_MAVEN_USERNAME: ${{ secrets.ONELITEFEATHER_MAVEN_USERNAME }}
+          ONELITEFEATHER_MAVEN_PASSWORD: ${{ secrets.ONELITEFEATHER_MAVEN_PASSWORD }}
+        run: ./gradlew :paper:shadowJar -Pversion="${RELEASE_VERSION}"
+      - name: Attach the jar to the GitHub release
+        run: gh release upload "${RELEASE_TAG}" paper/build/libs/coloeus-paper-*.jar --clobber
+
   # Dependency inventory of the release, shipped to Dependency-Track. Without an artifact the reusable
   # workflow generates the SBOM with Trivy from the checked-out tag, so no build-tool setup is needed.
   sbom:

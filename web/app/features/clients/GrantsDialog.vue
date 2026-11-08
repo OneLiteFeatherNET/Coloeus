@@ -82,16 +82,16 @@ async function submit() {
 <template>
   <AppDialog :open="open" :title="de.clients.grantsTitle" :description="client?.displayName" @close="emit('close')">
     <form class="flex flex-col gap-4" novalidate @submit.prevent="submit">
-      <p v-if="rows.length === 0" class="text-(--c-muted)">
+      <p v-if="rows.length === 0" class="text-on-surface-variant">
         {{ de.clients.emptyGrants }}
       </p>
-      <fieldset v-for="(row, index) in rows" :key="index" class="flex flex-wrap items-end gap-3 rounded-lg border border-(--c-border) p-3">
+      <fieldset v-for="(row, index) in rows" :key="index" class="flex flex-wrap items-end gap-3 rounded-md border border-outline-variant p-3">
         <legend class="sr-only">
           {{ de.clients.grants }} {{ index + 1 }}
         </legend>
         <label class="flex min-w-40 flex-1 flex-col gap-1">
           <span class="font-medium">{{ de.clients.grantCurrency }}</span>
-          <select v-model="row.currency" class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3">
+          <select v-model="row.currency" class="md-field">
             <option v-for="item in currencies" :key="item.code" :value="item.code">
               {{ item.code }}
             </option>
@@ -99,7 +99,7 @@ async function submit() {
         </label>
         <label class="flex min-w-40 flex-1 flex-col gap-1">
           <span class="font-medium">{{ de.clients.grantPermission }}</span>
-          <select v-model="row.permission" class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3">
+          <select v-model="row.permission" class="md-field">
             <option v-for="permission in PERMISSIONS" :key="permission" :value="permission">
               {{ de.clients.permissions[permission] }}
             </option>
@@ -109,7 +109,7 @@ async function submit() {
           {{ de.clients.removeGrant }}
         </AppButton>
       </fieldset>
-      <p v-if="duplicate" class="font-medium text-(--c-danger)" role="alert">
+      <p v-if="duplicate" class="font-medium text-error" role="alert">
         {{ de.clients.duplicateGrant }}
       </p>
       <div>

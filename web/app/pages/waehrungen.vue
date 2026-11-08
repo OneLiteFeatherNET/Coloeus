@@ -94,7 +94,7 @@ onMounted(load)
     </template>
   </AppPageHeader>
 
-  <p v-if="!staff.canWrite.value" class="text-(--c-muted)">
+  <p v-if="!staff.canWrite.value" class="text-on-surface-variant">
     {{ de.app.readOnlyNote }}
   </p>
   <AppStatus :message="failure" tone="error" />

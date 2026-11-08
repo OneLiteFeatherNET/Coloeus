@@ -38,7 +38,7 @@ const startHref = computed(() => `/admin/auth/login?returnTo=${encodeURIComponen
 
   <a
     :href="startHref"
-    class="inline-flex min-h-11 items-center justify-center rounded-lg bg-(--c-accent) px-4 py-2 font-medium text-(--c-accent-text)"
+    class="md-state inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-6 text-label-large text-on-primary"
   >
     {{ de.login.start }}
   </a>

@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppDialog from '~/components/ui/AppDialog.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
+import AppRadioGroup from '~/components/ui/AppRadioGroup.vue'
 import AppStatus from '~/components/ui/AppStatus.vue'
 import { de } from '~/i18n/de'
 import type { AdjustRequest, Currency, StaffBooking } from '~/types/api'
@@ -41,6 +42,15 @@ watch(() => props.open, (open) => {
     submitKey.reset()
   }
 })
+
+const directionOptions = [
+  { value: 'CREDIT', label: de.adjust.credit },
+  { value: 'DEBIT', label: de.adjust.debit }
+]
+
+function setDirection(value: string) {
+  direction.value = value === 'DEBIT' ? 'DEBIT' : 'CREDIT'
+}
 
 const digits = computed(() => props.currencies.find(item => item.code === currency.value)?.fractionDigits ?? 0)
 
@@ -104,26 +114,20 @@ async function submit() {
 <template>
   <AppDialog :open="open" :title="de.adjust.title" :description="de.adjust.description" @close="emit('close')">
     <form class="flex flex-col gap-4" novalidate @submit.prevent="submit">
-      <fieldset class="flex flex-col gap-2">
-        <legend class="font-medium">
-          {{ de.adjust.direction }}
-        </legend>
-        <label class="flex min-h-11 items-center gap-2">
-          <input v-model="direction" type="radio" name="direction" value="CREDIT">
-          {{ de.adjust.credit }}
-        </label>
-        <label class="flex min-h-11 items-center gap-2">
-          <input v-model="direction" type="radio" name="direction" value="DEBIT">
-          {{ de.adjust.debit }}
-        </label>
-      </fieldset>
+      <AppRadioGroup
+        name="direction"
+        :legend="de.adjust.direction"
+        :model-value="direction"
+        :options="directionOptions"
+        @update:model-value="setDirection"
+      />
 
       <AppFormField v-slot="{ id, describedby }" :label="de.adjust.currency">
         <select
           :id="id"
           v-model="currency"
           :aria-describedby="describedby"
-          class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3"
+          class="md-field"
         >
           <option v-for="item in currencies" :key="item.code" :value="item.code">
             {{ item.code }}
@@ -140,7 +144,7 @@ async function submit() {
           autocomplete="off"
           :aria-invalid="invalid"
           :aria-describedby="describedby"
-          class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3"
+          class="md-field"
         >
       </AppFormField>
 
@@ -152,7 +156,7 @@ async function submit() {
           maxlength="400"
           :aria-invalid="invalid"
           :aria-describedby="describedby"
-          class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3"
+          class="md-field"
         >
       </AppFormField>
 

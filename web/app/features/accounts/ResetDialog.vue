@@ -91,7 +91,7 @@ async function submit() {
           :id="id"
           v-model="currency"
           :aria-describedby="describedby"
-          class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3"
+          class="md-field"
         >
           <option :value="ALL">
             {{ de.reset.allCurrencies }}
@@ -102,7 +102,7 @@ async function submit() {
         </select>
       </AppFormField>
 
-      <div class="rounded-lg bg-(--c-disabled-bg) p-3" aria-live="polite">
+      <div class="rounded-md bg-surface-container-highest p-3" aria-live="polite">
         <p v-if="previewLines.length === 0">
           {{ de.reset.previewNone }}
         </p>
@@ -121,7 +121,7 @@ async function submit() {
           maxlength="400"
           :aria-invalid="invalid"
           :aria-describedby="describedby"
-          class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3"
+          class="md-field"
         >
       </AppFormField>
 

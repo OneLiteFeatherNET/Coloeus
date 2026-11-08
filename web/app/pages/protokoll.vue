@@ -95,7 +95,7 @@ onMounted(() => load())
       {{ de.log.loadMore }}
     </AppButton>
   </div>
-  <p v-else-if="actions.length > 0" class="text-(--c-muted)">
+  <p v-else-if="actions.length > 0" class="text-on-surface-variant">
     {{ de.log.noMore }}
   </p>
   </div>

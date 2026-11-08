@@ -4,6 +4,7 @@ import AppButton from '~/components/ui/AppButton.vue'
 import AppEmptyState from '~/components/ui/AppEmptyState.vue'
 import AppFormField from '~/components/ui/AppFormField.vue'
 import AppPageHeader from '~/components/ui/AppPageHeader.vue'
+import AppRadioGroup from '~/components/ui/AppRadioGroup.vue'
 import AppStatus from '~/components/ui/AppStatus.vue'
 import AppTable from '~/components/ui/AppTable.vue'
 import { de } from '~/i18n/de'
@@ -52,8 +53,13 @@ const rows = computed(() => hits.value.map(hit => ({
   accountId: hit.accountId
 })))
 
-function setMode(next: 'name' | 'uuid') {
-  mode.value = next
+const modeOptions = [
+  { value: 'name', label: de.accounts.byName },
+  { value: 'uuid', label: de.accounts.byUuid }
+]
+
+function setMode(next: string) {
+  mode.value = next === 'uuid' ? 'uuid' : 'name'
   value.value = ''
 }
 
@@ -80,20 +86,14 @@ async function search() {
   <div class="flex flex-col gap-6">
   <AppPageHeader :title="de.accounts.heading" :description="de.accounts.intro" />
 
-  <form class="flex flex-col gap-4 rounded-lg border border-(--c-border) bg-(--c-surface) p-4" novalidate @submit.prevent="search">
-    <fieldset class="flex flex-wrap gap-4">
-      <legend class="font-medium">
-        {{ de.accounts.byName }} / {{ de.accounts.byUuid }}
-      </legend>
-      <label class="flex min-h-11 items-center gap-2">
-        <input type="radio" name="search-mode" value="name" :checked="mode === 'name'" @change="setMode('name')">
-        {{ de.accounts.byName }}
-      </label>
-      <label class="flex min-h-11 items-center gap-2">
-        <input type="radio" name="search-mode" value="uuid" :checked="mode === 'uuid'" @change="setMode('uuid')">
-        {{ de.accounts.byUuid }}
-      </label>
-    </fieldset>
+  <form class="flex flex-col gap-4 rounded-md bg-surface-container-low p-4 shadow-elevation-1" novalidate @submit.prevent="search">
+    <AppRadioGroup
+      name="search-mode"
+      :legend="`${de.accounts.byName} / ${de.accounts.byUuid}`"
+      :model-value="mode"
+      :options="modeOptions"
+      @update:model-value="setMode"
+    />
 
     <AppFormField
       v-slot="{ id, describedby, invalid }"
@@ -108,7 +108,7 @@ async function search() {
         autocomplete="off"
         :aria-invalid="invalid"
         :aria-describedby="describedby"
-        class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3"
+        class="md-field"
       >
     </AppFormField>
 
@@ -122,7 +122,7 @@ async function search() {
   <AppStatus :message="failure" tone="error" />
 
   <section v-if="searched" class="flex flex-col gap-3" aria-labelledby="search-results">
-    <h2 id="search-results" class="text-xl font-semibold">
+    <h2 id="search-results" class="text-title-large">
       {{ de.accounts.results }}
     </h2>
     <AppEmptyState v-if="hits.length === 0">

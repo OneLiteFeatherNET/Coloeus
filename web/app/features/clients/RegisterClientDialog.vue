@@ -71,7 +71,7 @@ async function submit() {
           autocomplete="off"
           :aria-invalid="invalid"
           :aria-describedby="describedby"
-          class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 font-mono"
+          class="md-field font-mono"
         >
       </AppFormField>
       <AppFormField v-slot="{ id, describedby, invalid }" :label="de.clients.displayName" :hint="de.clients.displayNameHint" :error="nameError">
@@ -82,7 +82,7 @@ async function submit() {
           maxlength="200"
           :aria-invalid="invalid"
           :aria-describedby="describedby"
-          class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3"
+          class="md-field"
         >
       </AppFormField>
       <AppStatus v-if="failure" :message="failure" tone="error" />

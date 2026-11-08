@@ -1,0 +1,14 @@
+micronaut:
+  application:
+    name: coloeus
+  server:
+    # HTTP port of the service.
+    port: ${PORT:8080}
+
+endpoints:
+  all:
+    enabled: false
+  health:
+    enabled: true
+    sensitive: false
+    details-visible: NEVER

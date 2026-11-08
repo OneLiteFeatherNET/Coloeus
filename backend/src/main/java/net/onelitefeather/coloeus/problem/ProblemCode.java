@@ -29,7 +29,8 @@ public enum ProblemCode {
     CLIENT_EXISTS(HttpStatus.CONFLICT, "Client already exists"),
     CLIENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Client not found"),
     PLAYER_UNKNOWN(HttpStatus.NOT_FOUND, "Player name is unknown"),
-    NAME_LOOKUP_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "Name lookup is unavailable");
+    NAME_LOOKUP_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "Name lookup is unavailable"),
+    INTERNAL(HttpStatus.INTERNAL_SERVER_ERROR, "Internal error");
 
     private final HttpStatus status;
     private final String title;

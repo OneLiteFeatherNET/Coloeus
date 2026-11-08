@@ -17,6 +17,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import javax.money.MonetaryAmount;
 import org.javamoney.moneta.Money;
 import org.junit.jupiter.api.AfterEach;
@@ -39,6 +40,8 @@ class HttpColoeusClientTest {
 
     private FakeServer fake;
     private MutableClock clock;
+    /** The monotonic time of the client under test; advanced by the tests, never by the wall clock. */
+    private final AtomicLong nanos = new AtomicLong();
     private ExecutorService caller;
 
     @BeforeEach
@@ -238,18 +241,43 @@ class HttpColoeusClientTest {
     }
 
     @Test
-    void writeIsNotRetriedWhenTheBudgetHasNoRoomForAnotherAttempt() {
-        fake.route("POST", "/v1/transactions", request -> fake.awaitRelease());
-        ColoeusClient client = new HttpColoeusClient(config(), fake.uri().resolve("/token"),
-                HttpClient.newHttpClient(), clock, System::nanoTime, Duration.ofMillis(60));
+    void writeIsRetriedWithTheRemainingBudgetWhenLessThanAFullAttemptIsLeft() {
+        AtomicInteger attempts = new AtomicInteger();
+        fake.route("POST", "/v1/transactions", request -> {
+            if (attempts.incrementAndGet() > 1) {
+                return new FakeServer.Reply(201, transactionAnswer("2.50"));
+            }
+            nanos.addAndGet(Duration.ofMillis(600).toNanos());
+            return fake.awaitRelease();
+        });
+        ColoeusClient client = new HttpColoeusClient(config(), fake.uri().resolve("/token"), HttpClient.newHttpClient(),
+                clock, nanos::get, Duration.ofMillis(500));
 
-        Future<?> call = caller.submit(() -> client.transact(mint("2.50"), "k-7", Duration.ofMillis(100)));
+        TransactionResult result = client.transact(mint("2.50"), "k-8", Duration.ofSeconds(1));
+
+        List<FakeServer.Request> writes = fake.requestsTo("POST", "/v1/transactions");
+        assertEquals(2, writes.size(), "after a timed out attempt with 400 ms of a 1 s budget left, the write must be retried");
+        assertEquals("k-8", writes.get(0).idempotencyKey(), "the first attempt must carry the key");
+        assertEquals("k-8", writes.get(1).idempotencyKey(), "the retry must reuse the same key");
+        assertEquals(1, result.balances().size(), "the answer of the retry must be returned");
+    }
+
+    @Test
+    void writeIsNotRetriedWhenLessThanTheMinimumAttemptIsLeft() {
+        fake.route("POST", "/v1/transactions", request -> {
+            nanos.addAndGet(Duration.ofMillis(900).toNanos());
+            return fake.awaitRelease();
+        });
+        ColoeusClient client = new HttpColoeusClient(config(), fake.uri().resolve("/token"), HttpClient.newHttpClient(),
+                clock, nanos::get, Duration.ofMillis(500));
+
+        Future<?> call = caller.submit(() -> client.transact(mint("2.50"), "k-7", Duration.ofSeconds(1)));
 
         assertEquals("k-7", fake.nextArrival(TRANSACTIONS).idempotencyKey(), "the first attempt must carry the key");
         assertInstanceOf(ColoeusUnavailableException.class, causeOf(call),
                 "the timed out attempt must end the call with ColoeusUnavailableException");
         assertEquals(1, fake.requestsTo("POST", "/v1/transactions").size(),
-                "with 40 ms of a 100 ms budget left, a 60 ms attempt must not be sent");
+                "with 100 ms of a 1 s budget left, which is below the 150 ms minimum, another attempt must not be sent");
     }
 
     @Test
@@ -269,7 +297,7 @@ class HttpColoeusClientTest {
 
     private HttpColoeusClient client(Duration attemptTimeout) {
         return new HttpColoeusClient(config(), fake.uri().resolve("/token"), HttpClient.newHttpClient(), clock,
-                System::nanoTime, attemptTimeout);
+                nanos::get, attemptTimeout);
     }
 
     private ColoeusClientConfig config() {

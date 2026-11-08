@@ -24,12 +24,17 @@ import org.javamoney.moneta.CurrencyUnitBuilder;
 /**
  * {@link ColoeusClient} over the JDK {@link HttpClient}. Every call carries the bearer token of the caller's app
  * registration; every write carries an {@code Idempotency-Key}. A write whose first attempt times out, fails to connect
- * or receives a 5xx answer is retried once when the rest of its budget covers another attempt.
+ * or receives a 5xx answer is retried once with the same key when at least {@link #MIN_RETRY_ATTEMPT} of its budget
+ * is left; the retry gets the smaller of the time left and the attempt timeout. Calls share one HTTP/2 connection, so a
+ * write does not wait for a new connection while a read is in flight.
  */
 public final class HttpColoeusClient implements ColoeusClient {
 
-    /** Per attempt timeout of a write, and the least time left in a budget that still allows a retry. */
+    /** Per attempt timeout of a write. */
     private static final Duration ATTEMPT_TIMEOUT = DEFAULT_TIMEOUT;
+
+    /** The least time left in a write budget that still allows a retry. */
+    private static final Duration MIN_RETRY_ATTEMPT = Duration.ofMillis(150);
 
     private final String root;
     private final HttpClient http;
@@ -45,7 +50,7 @@ public final class HttpColoeusClient implements ColoeusClient {
      */
     public static HttpColoeusClient create(ColoeusClientConfig config, Clock clock) {
         HttpClient http = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1)
+                .version(HttpClient.Version.HTTP_2)
                 .connectTimeout(ATTEMPT_TIMEOUT)
                 .build();
         return new HttpColoeusClient(config, config.tokenEndpoint(), http, clock, System::nanoTime, ATTEMPT_TIMEOUT);
@@ -106,8 +111,9 @@ public final class HttpColoeusClient implements ColoeusClient {
     }
 
     /**
-     * Sends a write once, and once more when the first attempt was unavailable and the budget still covers a full
-     * attempt. Both attempts carry the same key, so the server books the transaction at most once.
+     * Sends a write once, and once more when the first attempt was unavailable and at least
+     * {@link #MIN_RETRY_ATTEMPT} of the budget is left; the retry is bounded by the time left and by the attempt
+     * timeout. Both attempts carry the same key, so the server books the transaction at most once.
      */
     private String write(String method, String path, String body, String key, Duration budget) {
         long start = ticker.getAsLong();
@@ -115,10 +121,10 @@ public final class HttpColoeusClient implements ColoeusClient {
             return attempt(method, path, body, key, minimum(attemptTimeout, budget));
         } catch (ColoeusUnavailableException unavailable) {
             Duration remaining = budget.minus(Duration.ofNanos(ticker.getAsLong() - start));
-            if (remaining.compareTo(attemptTimeout) < 0) {
+            if (remaining.compareTo(MIN_RETRY_ATTEMPT) < 0) {
                 throw unavailable;
             }
-            return attempt(method, path, body, key, attemptTimeout);
+            return attempt(method, path, body, key, minimum(attemptTimeout, remaining));
         }
     }
 

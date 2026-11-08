@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/OneLiteFeatherNET/Coloeus/compare/v0.2.3...v0.3.0) (2026-11-08)
+
+
+### Features
+
+* **admin:** add staff web ui ([11033e7](https://github.com/OneLiteFeatherNET/Coloeus/commit/11033e74d5cc12fbebd8a1620e24cccb754a7743))
+
 ## [0.2.3](https://github.com/OneLiteFeatherNET/Coloeus/compare/v0.2.2...v0.2.3) (2026-11-08)
 
 

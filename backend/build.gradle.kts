@@ -23,6 +23,9 @@ dependencies {
     implementation(mn.snakeyaml)
     implementation(mn.logback.core)
     implementation(mn.logback.classic)
+    // JSON logs in the cluster (LOG_JSON=true) for the log pipeline; janino enables the switch in logback.xml.
+    implementation(libs.logstash.logback.encoder)
+    runtimeOnly(libs.janino)
 
     // Persistence: Micronaut Data JDBC on a Hikari pool, schema by Flyway (forward-only, see db/migration).
     implementation(mn.micronaut.data.jdbc)

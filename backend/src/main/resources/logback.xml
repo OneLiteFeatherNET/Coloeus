@@ -1,0 +1,38 @@
+<configuration>
+    <!-- LOG_JSON=true (set in the cluster) renders one JSON object per line for the log pipeline; locally the
+         plain pattern stays readable. Micronaut reloads this file when logger levels come from configuration,
+         so the image must carry it. -->
+    <property name="LOG_JSON" value="${LOG_JSON:-false}"/>
+
+    <if condition='"true".equalsIgnoreCase(property("LOG_JSON"))'>
+        <then>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                    <fieldNames>
+                        <timestamp>timestamp</timestamp>
+                        <message>message</message>
+                        <logger>logger</logger>
+                        <thread>thread</thread>
+                        <level>level</level>
+                    </fieldNames>
+                </encoder>
+            </appender>
+        </then>
+        <else>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder>
+                    <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+                </encoder>
+            </appender>
+        </else>
+    </if>
+
+    <!-- Request bodies carry player names and amounts; keep the HTTP layers quiet whatever else is raised. -->
+    <logger name="io.micronaut.http.server" level="INFO"/>
+    <logger name="io.micronaut.http.client" level="INFO"/>
+    <logger name="io.netty" level="WARN"/>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
+</configuration>

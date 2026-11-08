@@ -83,18 +83,53 @@ public class BookingService {
      *
      * @throws ProblemException when the caller may not book the command (see {@link #authorize})
      */
-    TransactionResponse book(Connection connection, Caller caller, TransactionCommand command, Instant now,
+    public TransactionResponse book(Connection connection, Caller caller, TransactionCommand command, Instant now,
                              String metadataJson) throws SQLException {
-        UUID transactionId = UUID.randomUUID();
+        List<ResolvedLeg> legs = resolveLegs(connection, caller.clientId(), command, now);
+        authorize(connection, caller, command, legs);
+        return apply(connection, caller.clientId(), command, legs, now, metadataJson);
+    }
 
+    /**
+     * Books a staff money write (RESET or ADJUST) inside the caller's database transaction, without a client and
+     * without a grant. The staff API has checked the session, the role and the CSRF token before it calls this.
+     *
+     * @throws IllegalArgumentException when the command is not a staff kind
+     */
+    public TransactionResponse bookStaff(Connection connection, TransactionCommand command, Instant now,
+                                         String metadataJson) throws SQLException {
+        if (command.kind() != TransactionKind.RESET && command.kind() != TransactionKind.ADJUST) {
+            throw new IllegalArgumentException("only RESET and ADJUST are staff transactions");
+        }
+        List<ResolvedLeg> legs = resolveLegs(connection, null, command, now);
+        return apply(connection, null, command, legs, now, metadataJson);
+    }
+
+    /**
+     * Creates the balance row of a player account in a currency when it is missing and locks it until the transaction
+     * ends. A reset reads the balance it books under this lock.
+     */
+    public Money lockBalance(Connection connection, UUID accountId, String currency, Instant now) throws SQLException {
+        journal.ensureBalance(connection, accountId, currency, now);
+        return journal.lockBalance(connection, accountId, currency, unit(currency));
+    }
+
+    private List<ResolvedLeg> resolveLegs(Connection connection, UUID clientId, TransactionCommand command, Instant now)
+            throws SQLException {
         List<ResolvedLeg> legs = new ArrayList<>();
         for (Leg leg : command.legs()) {
-            legs.add(resolve(connection, caller.clientId(), command.kind(), leg, now));
+            legs.add(resolve(connection, clientId, command.kind(), leg, now));
         }
         if (command.kind() == TransactionKind.TRANSFER && legs.get(0).accountId().equals(legs.get(1).accountId())) {
             throw RequestValues.invalid("from and to must be different accounts");
         }
-        authorize(connection, caller, command, legs);
+        return legs;
+    }
+
+    /** Locks, checks and writes the resolved legs, then journals them. {@code clientId} is null for staff writes. */
+    private TransactionResponse apply(Connection connection, UUID clientId, TransactionCommand command,
+                                      List<ResolvedLeg> legs, Instant now, String metadataJson) throws SQLException {
+        UUID transactionId = UUID.randomUUID();
 
         Map<Slot, Money> deltas = new TreeMap<>(ORDER);
         for (ResolvedLeg leg : legs) {
@@ -132,7 +167,7 @@ public class BookingService {
             }
         }
 
-        journal.insertTransaction(connection, transactionId, command, caller.clientId(), metadataJson, now);
+        journal.insertTransaction(connection, transactionId, command, clientId, metadataJson, now);
         List<TransactionResponse.PostingLine> postings = new ArrayList<>();
         for (ResolvedLeg leg : legs) {
             journal.insertPosting(connection, transactionId, leg.accountId(), leg.amount(), now);
@@ -174,6 +209,9 @@ public class BookingService {
         switch (command.kind()) {
             case MINT -> grants.require(connection, caller, legs.get(0).currency(), Permission.MINT);
             case BURN -> grants.require(connection, caller, legs.get(0).currency(), Permission.BURN);
+            case RESET, ADJUST -> {
+                // Staff money writes are authorized by the staff API before bookStaff runs; no grant applies.
+            }
             case TRANSFER, BATCH -> {
                 for (ResolvedLeg leg : legs) {
                     if (!leg.isDebit()) {

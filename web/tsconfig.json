@@ -1,0 +1,14 @@
+{
+  // https://nuxt.com/docs/guide/concepts/typescript
+  // The application (app/), the Nitro server (server/), the shared code (shared/) and the unit tests are checked
+  // together, so a shape mismatch between the browser and the BFF fails `pnpm typecheck`.
+  "extends": "./.nuxt/tsconfig.json",
+  "include": [
+    "./.nuxt/**/*.d.ts",
+    "./app/**/*",
+    "./server/**/*",
+    "./shared/**/*",
+    "./tests/**/*",
+    "./*.ts"
+  ]
+}

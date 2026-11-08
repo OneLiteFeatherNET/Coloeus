@@ -12,19 +12,26 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 import net.onelitefeather.coloeus.account.AccountController;
+import net.onelitefeather.coloeus.admin.MoneyFlowController;
+import net.onelitefeather.coloeus.admin.StaffAccountController;
+import net.onelitefeather.coloeus.admin.StaffActionController;
+import net.onelitefeather.coloeus.admin.StaffClientController;
+import net.onelitefeather.coloeus.admin.StaffCurrencyController;
 import net.onelitefeather.coloeus.currency.CurrencyController;
 import net.onelitefeather.coloeus.ledger.TransactionController;
 import net.onelitefeather.coloeus.player.PlayerNameController;
 import org.junit.jupiter.api.Test;
 
 /**
- * Default deny for {@code /v1}: every route method of the service names the roles that may call it.
+ * Default deny for {@code /v1}: every route method of the service, the staff API included, names the roles that may call it.
  */
 class SecuredRoutesTest {
 
     private static final List<Class<?>> CONTROLLERS = List.of(
             CurrencyController.class, ClientController.class, PlayerNameController.class,
-            AccountController.class, TransactionController.class);
+            AccountController.class, TransactionController.class, StaffAccountController.class,
+            StaffClientController.class, StaffCurrencyController.class, StaffActionController.class,
+            MoneyFlowController.class);
 
     @Test
     void everyRouteOfTheServiceNamesItsRoles() {

@@ -43,11 +43,11 @@ public class AccountRepository {
     }
 
     /** A balance of one currency; zero when no balance row exists yet. */
-    record BalanceRow(String currency, MonetaryAmount amount) {
+    public record BalanceRow(String currency, MonetaryAmount amount) {
     }
 
     /** The id and time of an account's newest posting. */
-    record PostingPosition(UUID id, Instant createdAt) {
+    public record PostingPosition(UUID id, Instant createdAt) {
     }
 
     /** A posting of an account joined with its transaction; the amount is signed. */
@@ -135,7 +135,7 @@ public class AccountRepository {
     }
 
     /** One row per currency the service defines, ordered by code; the amount is null without a balance row. */
-    List<BalanceRow> balances(Connection connection, UUID accountId) throws SQLException {
+    public List<BalanceRow> balances(Connection connection, UUID accountId) throws SQLException {
         List<BalanceRow> result = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(
                 "SELECT c.code, b.amount FROM currency c "
@@ -200,7 +200,7 @@ public class AccountRepository {
         return result;
     }
 
-    Optional<PostingPosition> latestPosting(Connection connection, UUID accountId) throws SQLException {
+    public Optional<PostingPosition> latestPosting(Connection connection, UUID accountId) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(
                 "SELECT id, created_at FROM posting WHERE account_id = ? ORDER BY created_at DESC, id DESC LIMIT 1")) {
             statement.setObject(1, accountId);

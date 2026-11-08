@@ -11,6 +11,8 @@ import net.onelitefeather.coloeus.persistence.UncheckedSqlException;
 import net.onelitefeather.coloeus.problem.ProblemCode;
 import net.onelitefeather.coloeus.problem.ProblemException;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
@@ -47,31 +49,37 @@ public class CurrencyService {
     }
 
     public Currency create(CreateCurrencyRequest request) {
+        Instant now = clock.instant();
+        Currency created = transactions.inTransaction(connection -> createIn(connection, request, now));
+        reloadProvider();
+        return created;
+    }
+
+    /**
+     * Creates a currency inside the caller's transaction. The provider is not reloaded here; the caller reloads it
+     * after the commit ({@link #reloadProvider()}).
+     *
+     * @throws ProblemException {@link ProblemCode#CURRENCY_EXISTS} or {@link ProblemCode#REQUEST_INVALID}
+     */
+    public Currency createIn(Connection connection, CreateCurrencyRequest request, Instant now) throws SQLException {
         String code = requireCode(request.code());
         String nameSingular = requireText("nameSingular", request.nameSingular(), MAX_NAME_LENGTH);
         String namePlural = requireText("namePlural", request.namePlural(), MAX_NAME_LENGTH);
         String symbol = requireText("symbol", request.symbol(), MAX_SYMBOL_LENGTH);
         int fractionDigits = requireFractionDigits(request.fractionDigits());
-        Instant now = clock.instant();
-        Currency created;
+        repository.lockCurrencyWrites(connection);
+        // The first currency is the default one; the lock keeps that decision race-free.
+        boolean first = repository.count(connection) == 0;
+        Currency currency = new Currency(code, nameSingular, namePlural, symbol, fractionDigits, first, now, now);
         try {
-            created = transactions.inTransaction(connection -> {
-                repository.lockCurrencyWrites(connection);
-                // The first currency is the default one; the lock keeps that decision race-free.
-                boolean first = repository.count(connection) == 0;
-                Currency currency = new Currency(code, nameSingular, namePlural, symbol, fractionDigits,
-                        first, now, now);
-                repository.insert(connection, currency);
-                return currency;
-            });
-        } catch (UncheckedSqlException e) {
-            if (e.isState(UncheckedSqlException.UNIQUE_VIOLATION)) {
+            repository.insert(connection, currency);
+        } catch (SQLException e) {
+            if (UncheckedSqlException.UNIQUE_VIOLATION.equals(e.getSQLState())) {
                 throw ProblemException.of(ProblemCode.CURRENCY_EXISTS, "currency " + code + " already exists");
             }
             throw e;
         }
-        reloadProvider();
-        return created;
+        return currency;
     }
 
     public List<Currency> list() {
@@ -118,22 +126,30 @@ public class CurrencyService {
 
     public Currency makeDefault(String code) {
         Instant now = clock.instant();
-        Currency result = transactions.inTransaction(connection -> {
-            repository.lockCurrencyWrites(connection);
-            repository.findByCode(connection, code, true).orElseThrow(() -> notFound(code));
-            repository.clearDefaultExcept(connection, code, now);
-            repository.markDefault(connection, code, now);
-            return repository.findByCode(connection, code, false).orElseThrow(() -> notFound(code));
-        });
+        Currency result = transactions.inTransaction(connection -> makeDefaultIn(connection, code, now));
         reloadProvider();
         return result;
+    }
+
+    /**
+     * Makes a currency the single default inside the caller's transaction. The caller reloads the provider after the
+     * commit ({@link #reloadProvider()}).
+     *
+     * @throws ProblemException {@link ProblemCode#CURRENCY_NOT_FOUND}
+     */
+    public Currency makeDefaultIn(Connection connection, String code, Instant now) throws SQLException {
+        repository.lockCurrencyWrites(connection);
+        repository.findByCode(connection, code, true).orElseThrow(() -> notFound(code));
+        repository.clearDefaultExcept(connection, code, now);
+        repository.markDefault(connection, code, now);
+        return repository.findByCode(connection, code, false).orElseThrow(() -> notFound(code));
     }
 
     /**
      * Replaces this replica's JSR 354 currencies with the stored ones. Under one lock, so a reload always reads the
      * state of its own commit or a later one, and the last reload to finish holds the newest state.
      */
-    void reloadProvider() {
+    public void reloadProvider() {
         synchronized (reloadLock) {
             List<CurrencyDefinition> definitions = transactions.read(repository::findAll).stream()
                     .map(currency -> new CurrencyDefinition(currency.code(), currency.fractionDigits()))

@@ -164,3 +164,16 @@ The codes below are stable. A new code is added here in the same change that use
 - Title: Name lookup is unavailable
 - Meaning: The name is not in the register and the Mojang profile API failed or did not answer in time. The service
   stores nothing and answers no guess; retry later.
+
+## NOTHING_TO_RESET
+
+- Status: 409
+- Title: Nothing to reset
+- Meaning: A reset found no positive balance in the requested currency or currencies. Nothing is written.
+
+## INTERNAL
+
+- Status: 500
+- Title: Internal error
+- Meaning: An unexpected failure of the staff API, for example the database is unreachable. The `detail` names no
+  cause, table, host or secret; the cause is in the service log.

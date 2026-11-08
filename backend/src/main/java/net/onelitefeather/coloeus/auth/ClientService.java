@@ -6,6 +6,8 @@ import net.onelitefeather.coloeus.persistence.UncheckedSqlException;
 import net.onelitefeather.coloeus.problem.ProblemCode;
 import net.onelitefeather.coloeus.problem.ProblemException;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -47,6 +49,68 @@ public class ClientService {
             throw e;
         }
         return new ClientView(clientId, displayName, now, List.of());
+    }
+
+    /**
+     * Registers a client inside the caller's transaction (the staff API writes its audit row in the same one).
+     *
+     * @throws ProblemException {@link ProblemCode#CLIENT_EXISTS}, or {@link ProblemCode#REQUEST_INVALID}
+     */
+    public ClientView registerIn(Connection connection, String clientIdText, String displayNameText, Instant now)
+            throws SQLException {
+        UUID clientId = parseClientId(clientIdText);
+        String displayName = requireDisplayName(displayNameText);
+        try {
+            repository.insert(connection, clientId, displayName, now);
+        } catch (SQLException e) {
+            if (UncheckedSqlException.UNIQUE_VIOLATION.equals(e.getSQLState())) {
+                throw ProblemException.of(ProblemCode.CLIENT_EXISTS, "client " + clientId + " is already registered");
+            }
+            throw e;
+        }
+        return new ClientView(clientId, displayName, now, List.of());
+    }
+
+    /**
+     * Replaces the grants of a client inside the caller's transaction and returns the client with its grants.
+     * The caller checks the requested grants (duplicates, currencies) before.
+     *
+     * @throws ProblemException {@link ProblemCode#CLIENT_NOT_FOUND} or {@link ProblemCode#CURRENCY_NOT_FOUND}
+     */
+    public ClientView replaceGrantsIn(Connection connection, String clientIdText, List<GrantRequest> requests)
+            throws SQLException {
+        UUID clientId = parseClientId(clientIdText);
+        if (requests == null) {
+            throw ProblemException.of(ProblemCode.REQUEST_INVALID, "the body must be a list of grants");
+        }
+        List<GrantView> grants = requests.stream().map(ClientService::toGrant).toList();
+        if (!repository.lockClient(connection, clientId)) {
+            throw ProblemException.of(ProblemCode.CLIENT_NOT_FOUND, "client " + clientId + " is not registered");
+        }
+        for (GrantView grant : grants) {
+            if (!repository.currencyExists(connection, grant.currency())) {
+                throw ProblemException.of(ProblemCode.CURRENCY_NOT_FOUND,
+                        "currency " + grant.currency() + " does not exist");
+            }
+        }
+        repository.deleteGrants(connection, clientId);
+        for (GrantView grant : grants) {
+            repository.insertGrant(connection, clientId, grant);
+        }
+        return viewIn(connection, clientId);
+    }
+
+    /**
+     * The client with its grants, inside the caller's transaction.
+     *
+     * @throws ProblemException {@link ProblemCode#CLIENT_NOT_FOUND}
+     */
+    public ClientView viewIn(Connection connection, UUID clientId) throws SQLException {
+        ClientRepository.ClientRecord client = repository.find(connection, clientId)
+                .orElseThrow(() -> ProblemException.of(ProblemCode.CLIENT_NOT_FOUND,
+                        "client " + clientId + " is not registered"));
+        return new ClientView(client.clientId(), client.displayName(), client.createdAt(),
+                repository.findGrants(connection, clientId));
     }
 
     public List<ClientView> list() {

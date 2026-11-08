@@ -168,24 +168,20 @@ The codes below are stable. A new code is added here in the same change that use
 ## SESSION_REQUIRED
 
 - Status: 401
-- Title: Staff session required
-- Meaning: A call under `/admin/api` has no valid staff session: the cookie is missing, unknown, past its 8 hour
-  lifetime or past its 30 minute idle timeout. The session is deleted when it is found expired. A bearer token of a
-  service is not a staff session and gets this answer too.
+- Title: Staff session is required
+- Meaning: A request under `/admin/api` has no valid staff session: the cookie is missing, the session expired (8 hours after the login or 30 minutes idle), or it was ended by logout. The staff UI sends the person to the login. Answered by the Nitro server of the staff UI, never by the backend.
 
 ## CSRF_INVALID
 
 - Status: 403
 - Title: CSRF check failed
-- Meaning: A staff write (or the staff logout) lacks the `X-CSRF-Token` header of its session, or its `Origin` header
-  is missing or is not the staff UI's origin. Nothing is changed.
+- Meaning: A staff write (`POST`, `PUT`, `DELETE` under `/admin/api`, or the logout) lacks the `X-CSRF-Token` header of its session, or its `Origin` header is not the address of the staff UI. Nothing is forwarded to the backend. Answered by the Nitro server of the staff UI.
 
 ## NOT_FOUND
 
 - Status: 404
-- Title: Not found
-- Meaning: A path under `/admin/api/` names no endpoint of the staff API. The staff UI's server answers it without
-  calling the backend. The backend answers unknown paths under `/v1/staff` with its own framework answer.
+- Title: Endpoint is not found
+- Meaning: A path under `/admin/api` names no endpoint of the staff API for this method. Nothing is forwarded to the backend. Answered by the Nitro server of the staff UI.
 
 ## NOTHING_TO_RESET
 
@@ -197,5 +193,4 @@ The codes below are stable. A new code is added here in the same change that use
 
 - Status: 500
 - Title: Internal error
-- Meaning: An unexpected failure of the staff API, for example the database is unreachable. The `detail` names no
-  cause, table, host or secret; the cause is in the service log.
+- Meaning: An unexpected failure happened on the server, or a backend could not be reached or did not answer in time. The `detail` names no cause, table, host or secret; the request may be retried, and a write is safe to retry with the same `Idempotency-Key`.

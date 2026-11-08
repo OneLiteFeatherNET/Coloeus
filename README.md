@@ -55,7 +55,7 @@ message names the variable.
 
 The `paper` module is a Paper plugin that registers the default currency of Coloeus as the Vault economy of a server.
 Shops, jobs and other plugins that use Vault then read and write the central balance, and a balance is the same on
-every server of the network.
+every server of the network. The provider registers during plugin load, so shop and other economy plugins find it regardless of their load order.
 
 ### Install
 

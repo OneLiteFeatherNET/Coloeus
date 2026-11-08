@@ -16,8 +16,9 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
- * Registers the Coloeus economy with Vault. If the configuration is incomplete, or Coloeus has no single default
- * currency, the plugin disables itself and registers nothing, so the server keeps its previous economy.
+ * Registers the Coloeus economy with Vault while the plugin loads, so it is in place before any plugin is enabled. If
+ * the configuration is incomplete, or Coloeus has no single default currency, the plugin disables itself and registers
+ * nothing, so the server keeps its previous economy.
  */
 public final class ColoeusPlugin extends JavaPlugin {
 
@@ -26,26 +27,42 @@ public final class ColoeusPlugin extends JavaPlugin {
     /** The balances of online players are refreshed every 30 seconds (600 ticks). */
     private static final long REFRESH_TICKS = 30L * 20L;
 
+    private ColoeusClient client;
+    private CurrencyDefinition currency;
+    private BalanceCache cache;
+    /** The reason the economy could not be built in {@link #onLoad()}, or {@code null} when it was registered. */
+    private String startupFailure;
     private ExecutorService io;
 
     @Override
-    public void onEnable() {
+    public void onLoad() {
         saveDefaultConfig();
         ConnectionSettings settings = ConnectionSettings.resolve(getConfig()::getString, System::getenv);
         List<String> missing = settings.missing();
         if (!missing.isEmpty()) {
-            disable("missing configuration: " + String.join(", ", missing));
+            fail("missing configuration: " + String.join(", ", missing));
             return;
         }
 
         Clock clock = Clock.systemUTC();
-        ColoeusClient client;
-        CurrencyDefinition currency;
         try {
             client = HttpColoeusClient.create(settings.toClientConfig(), clock);
             currency = ColoeusEconomy.defaultCurrency(client.currencies(STARTUP_TIMEOUT));
         } catch (IllegalArgumentException | IllegalStateException | ColoeusException e) {
-            disable(e.getMessage());
+            fail(e.getMessage());
+            return;
+        }
+
+        cache = new BalanceCache(clock);
+        ColoeusEconomy economy = new ColoeusEconomy(client, currency, cache, getLogger());
+        getServer().getServicesManager().register(Economy.class, economy, this, ServicePriority.Highest);
+        getLogger().info("Vault economy " + currency.code() + " registered at Highest priority");
+    }
+
+    @Override
+    public void onEnable() {
+        if (startupFailure != null) {
+            getServer().getPluginManager().disablePlugin(this);
             return;
         }
 
@@ -54,18 +71,16 @@ public final class ColoeusPlugin extends JavaPlugin {
             thread.setDaemon(true);
             return thread;
         });
-        BalanceCache cache = new BalanceCache(clock);
         PlayerSync sync = new PlayerSync(client, cache, currency, io, getLogger());
-        ColoeusEconomy economy = new ColoeusEconomy(client, currency, cache, getLogger());
 
-        getServer().getServicesManager().register(Economy.class, economy, this, ServicePriority.Highest);
         getServer().getPluginManager().registerEvents(new JoinListener(sync), this);
         getServer().getScheduler().runTaskTimer(this, () -> refreshOnline(sync), REFRESH_TICKS, REFRESH_TICKS);
-        getLogger().info("Vault economy " + currency.code() + " registered at Highest priority");
+        refreshOnline(sync);
     }
 
     @Override
     public void onDisable() {
+        getServer().getServicesManager().unregisterAll(this);
         if (io != null) {
             io.shutdownNow();
         }
@@ -77,8 +92,8 @@ public final class ColoeusPlugin extends JavaPlugin {
         io.execute(() -> sync.refresh(online));
     }
 
-    private void disable(String reason) {
+    private void fail(String reason) {
+        startupFailure = reason;
         getLogger().severe("Coloeus disabled, no economy is registered: " + reason);
-        getServer().getPluginManager().disablePlugin(this);
     }
 }

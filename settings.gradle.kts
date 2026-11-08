@@ -60,9 +60,13 @@ dependencyResolutionManagement {
             version("moneta", "1.4.5")
             version("money-api", "1.1")
             version("archunit", "1.5.1")
+            version("logstash-logback-encoder", "9.0")
+            version("janino", "3.1.12")
 
             library("money-api", "javax.money", "money-api").versionRef("money-api")
             library("moneta-core", "org.javamoney.moneta", "moneta-core").versionRef("moneta")
+            library("logstash-logback-encoder", "net.logstash.logback", "logstash-logback-encoder").versionRef("logstash-logback-encoder")
+            library("janino", "org.codehaus.janino", "janino").versionRef("janino")
             library("archunit-junit5", "com.tngtech.archunit", "archunit-junit5").versionRef("archunit")
             // Version managed by the Micronaut platform BOM (mn.boms.testcontainers).
             library("testcontainers-junit-jupiter", "org.testcontainers", "testcontainers-junit-jupiter").withoutVersion()

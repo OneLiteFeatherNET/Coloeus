@@ -1,0 +1,11 @@
+name: Coloeus
+# Replaced by the build with the project version (see paper/build.gradle.kts).
+version: '${version}'
+main: net.onelitefeather.coloeus.paper.ColoeusPlugin
+# The Paper 26.1 API. The bridge needs Vault at startup, so the plugin loads after it.
+api-version: '26.1'
+depend: [Vault]
+author: TheMeinerLP
+authors: [TheMeinerLP, OneLiteFeatherNET]
+description: Vault economy bridge for the default currency of the Coloeus network.
+website: https://github.com/OneLiteFeatherNET/Coloeus

@@ -109,10 +109,10 @@ onMounted(async () => {
   <AppPageHeader :title="de.overview.heading" :description="de.overview.intro">
     <template #actions>
       <div role="group" :aria-label="de.overview.windowLabel" class="flex gap-2">
-        <AppButton variant="secondary" :pressed="flowWindow === '7D'" @click="setWindow('7D')">
+        <AppButton variant="outlined" :pressed="flowWindow === '7D'" @click="setWindow('7D')">
           {{ de.overview.window7d }}
         </AppButton>
-        <AppButton variant="secondary" :pressed="flowWindow === 'ALL'" @click="setWindow('ALL')">
+        <AppButton variant="outlined" :pressed="flowWindow === 'ALL'" @click="setWindow('ALL')">
           {{ de.overview.windowAll }}
         </AppButton>
       </div>
@@ -205,14 +205,14 @@ onMounted(async () => {
         </select>
       </label>
       <div role="group" :aria-label="de.overview.days7" class="flex gap-2">
-        <AppButton variant="secondary" :pressed="days === 7" @click="days = 7">
+        <AppButton variant="outlined" :pressed="days === 7" @click="days = 7">
           {{ de.overview.days7 }}
         </AppButton>
-        <AppButton variant="secondary" :pressed="days === 30" @click="days = 30">
+        <AppButton variant="outlined" :pressed="days === 30" @click="days = 30">
           {{ de.overview.days30 }}
         </AppButton>
       </div>
-      <AppButton variant="secondary" :pressed="showTable" @click="showTable = !showTable">
+      <AppButton variant="outlined" :pressed="showTable" @click="showTable = !showTable">
         {{ showTable ? de.overview.hideTable : de.overview.showTable }}
       </AppButton>
     </div>

@@ -81,7 +81,7 @@ onMounted(load)
     <template #cell="{ row, column }">
       <AppButton
         v-if="column === 'actions'"
-        variant="secondary"
+        variant="outlined"
         :disabled="!staff.canWrite.value"
         @click="editGrants(String(row.actions))"
       >

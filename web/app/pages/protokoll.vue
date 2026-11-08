@@ -91,7 +91,7 @@ onMounted(() => load())
   </AppTable>
 
   <div v-if="nextCursor" class="flex justify-start">
-    <AppButton variant="secondary" @click="load(true)">
+    <AppButton variant="outlined" @click="load(true)">
       {{ de.log.loadMore }}
     </AppButton>
   </div>

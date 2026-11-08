@@ -9,14 +9,14 @@ defineProps<{
 <template>
   <header class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
     <div class="flex flex-col gap-1">
-      <h1 class="text-2xl font-bold">
+      <h1 class="text-headline-medium text-on-surface">
         {{ title }}
       </h1>
-      <p v-if="description" class="text-(--c-muted)">
+      <p v-if="description" class="text-body-large text-on-surface-variant">
         {{ description }}
       </p>
     </div>
-    <div v-if="$slots.actions" class="flex flex-wrap gap-3">
+    <div v-if="$slots.actions" class="flex flex-wrap items-center gap-3">
       <slot name="actions" />
     </div>
   </header>

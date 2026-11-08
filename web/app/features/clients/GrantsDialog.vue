@@ -105,7 +105,7 @@ async function submit() {
             </option>
           </select>
         </label>
-        <AppButton variant="secondary" @click="removeRow(index)">
+        <AppButton variant="outlined" @click="removeRow(index)">
           {{ de.clients.removeGrant }}
         </AppButton>
       </fieldset>
@@ -113,13 +113,13 @@ async function submit() {
         {{ de.clients.duplicateGrant }}
       </p>
       <div>
-        <AppButton variant="secondary" @click="addRow">
+        <AppButton variant="outlined" @click="addRow">
           {{ de.clients.addGrant }}
         </AppButton>
       </div>
       <AppStatus v-if="failure" :message="failure" tone="error" />
       <div class="flex flex-wrap justify-end gap-3">
-        <AppButton variant="secondary" @click="emit('close')">
+        <AppButton variant="outlined" @click="emit('close')">
           {{ de.common.cancel }}
         </AppButton>
         <AppButton type="submit" :disabled="!valid || busy">

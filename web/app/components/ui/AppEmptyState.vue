@@ -3,8 +3,8 @@
 </script>
 
 <template>
-  <div class="flex flex-col items-start gap-3 rounded-lg border border-dashed border-(--c-border) p-6">
-    <p class="text-(--c-muted)">
+  <div class="flex flex-col items-start gap-3 rounded-md border border-dashed border-outline-variant p-6">
+    <p class="text-body-large text-on-surface-variant">
       <slot />
     </p>
     <slot name="action" />

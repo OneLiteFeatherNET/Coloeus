@@ -52,18 +52,18 @@ const bars = computed(() => props.series.map((serie, index) => ({
           :y="plot - value"
           :width="groupWidth * 0.32"
           :height="value"
-          :class="seriesIndex === 0 ? 'text-(--c-created)' : 'text-(--c-destroyed)'"
+          :class="seriesIndex === 0 ? 'text-primary' : 'text-tertiary'"
           :fill="serie.pattern === 'hatched' ? `url(#${hatchId})` : 'currentColor'"
         />
       </g>
-      <line x1="0" :y1="plot" :x2="width" :y2="plot" stroke="currentColor" />
+      <line x1="0" :y1="plot" :x2="width" :y2="plot" stroke="currentColor" class="text-outline" />
     </svg>
     <ul class="flex flex-wrap gap-4 text-sm">
       <li v-for="(serie, seriesIndex) in series" :key="serie.name" class="flex items-center gap-2">
         <span
           aria-hidden="true"
           class="inline-block h-3 w-3 border"
-          :class="seriesIndex === 0 ? 'bg-(--c-created) border-(--c-created)' : 'bg-(--c-destroyed) border-(--c-destroyed)'"
+          :class="seriesIndex === 0 ? 'bg-primary border-primary' : 'bg-tertiary border-tertiary'"
         />
         {{ serie.name }}
       </li>

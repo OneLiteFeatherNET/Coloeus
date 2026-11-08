@@ -114,7 +114,7 @@ async function submit() {
       </AppFormField>
       <AppStatus v-if="failure" :message="failure" tone="error" />
       <div class="flex flex-wrap justify-end gap-3">
-        <AppButton variant="secondary" @click="emit('close')">
+        <AppButton variant="outlined" @click="emit('close')">
           {{ de.common.cancel }}
         </AppButton>
         <AppButton type="submit" :disabled="!valid || busy">

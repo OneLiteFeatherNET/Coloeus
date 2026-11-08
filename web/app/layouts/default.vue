@@ -57,7 +57,7 @@ async function logout() {
           <span class="text-(--c-muted)">
             {{ de.app.sessionUntil(formatInstant(staff.me.value.sessionExpiresAt, browserTimeZone())) }}
           </span>
-          <AppButton variant="secondary" :disabled="loggingOut" @click="logout">
+          <AppButton variant="outlined" :disabled="loggingOut" @click="logout">
             {{ loggingOut ? de.app.loggingOut : de.app.logout }}
           </AppButton>
         </div>

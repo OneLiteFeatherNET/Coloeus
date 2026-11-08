@@ -155,7 +155,7 @@ onMounted(async () => {
         <AppButton variant="danger" :disabled="!writable" @click="resetOpen = true">
           {{ de.account.reset }}
         </AppButton>
-        <AppButton variant="secondary" :disabled="!writable" @click="adjustOpen = true">
+        <AppButton variant="outlined" :disabled="!writable" @click="adjustOpen = true">
           {{ de.account.adjust }}
         </AppButton>
       </div>
@@ -200,7 +200,7 @@ onMounted(async () => {
         </template>
       </AppTable>
       <div v-if="nextCursor" class="flex justify-start">
-        <AppButton variant="secondary" @click="loadHistory(true)">
+        <AppButton variant="outlined" @click="loadHistory(true)">
           {{ de.account.loadMore }}
         </AppButton>
       </div>

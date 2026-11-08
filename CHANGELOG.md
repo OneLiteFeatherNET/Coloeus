@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/OneLiteFeatherNET/Coloeus/compare/v0.2.1...v0.2.2) (2026-11-08)
+
+
+### Bug Fixes
+
+* **vault:** retry writes within the budget and share one connection ([#11](https://github.com/OneLiteFeatherNET/Coloeus/issues/11)) ([b1bc401](https://github.com/OneLiteFeatherNET/Coloeus/commit/b1bc40163a1bfda0f7da0e45436ef7aece39d0e7))
+
 ## [0.2.1](https://github.com/OneLiteFeatherNET/Coloeus/compare/v0.2.0...v0.2.1) (2026-11-08)
 
 

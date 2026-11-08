@@ -15,6 +15,8 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/unit/**/*.spec.ts'],
+    // The Material color library ships extensionless ESM imports, which Node cannot load on its own.
+    server: { deps: { inline: ['@material/material-color-utilities'] } },
     // Random order and parallel files must not change results (F.I.R.S.T.).
     sequence: { shuffle: true },
     restoreMocks: true,

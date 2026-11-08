@@ -9,8 +9,12 @@
     "node": "^24.0.0"
   },
   "scripts": {
+    "predev": "pnpm theme",
     "dev": "nuxt dev",
+    "prebuild": "pnpm theme",
     "build": "nuxt build",
+    "theme": "tsx scripts/generate-theme.ts",
+    "icons": "tsx scripts/generate-icons.ts",
     "start": "node .output/server/index.mjs",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
@@ -21,6 +25,8 @@
     "api:types": "openapi-typescript ../backend/build/classes/java/main/META-INF/swagger/coloeus.yml -o app/types/api.d.ts"
   },
   "dependencies": {
+    "@fontsource-variable/roboto-flex": "5.3.0",
+    "@material/material-color-utilities": "0.4.0",
     "@vueuse/nuxt": "14.4.0",
     "ioredis": "5.11.1",
     "jose": "6.2.13",
@@ -29,6 +35,7 @@
     "vue": "3.5.41"
   },
   "devDependencies": {
+    "@iconify-json/material-symbols": "1.2.96",
     "@nuxt/eslint": "1.17.0",
     "@tailwindcss/vite": "4.3.3",
     "@types/node": "26.2.0",
@@ -39,6 +46,7 @@
     "happy-dom": "20.11.2",
     "openapi-typescript": "7.13.0",
     "tailwindcss": "4.3.3",
+    "tsx": "4.23.15",
     "typescript": "6.0.3",
     "vitest": "4.1.10",
     "vue-tsc": "3.3.9"

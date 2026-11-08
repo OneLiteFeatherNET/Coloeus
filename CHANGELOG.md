@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/OneLiteFeatherNET/Coloeus/compare/v0.2.0...v0.2.1) (2026-11-08)
+
+
+### Bug Fixes
+
+* **ledger:** ship a logback configuration in the image ([#9](https://github.com/OneLiteFeatherNET/Coloeus/issues/9)) ([448733c](https://github.com/OneLiteFeatherNET/Coloeus/commit/448733c67a20d4b0fc78987a82c6ff54dde64ba7))
+
 ## [0.2.0](https://github.com/OneLiteFeatherNET/Coloeus/compare/v0.1.0...v0.2.0) (2026-11-08)
 
 

@@ -51,6 +51,63 @@ message names the variable.
 | `COLOEUS_MOJANG_URL`        | no       | `https://api.mojang.com`   | Base URL of the Mojang profile API used for name lookups (read timeout 2 s).            |
 | `PORT`                      | no       | `8080`                     | HTTP port of the service.                                                               |
 
+## Paper (Vault bridge)
+
+The `paper` module is a Paper plugin that registers the default currency of Coloeus as the Vault economy of a server.
+Shops, jobs and other plugins that use Vault then read and write the central balance, and a balance is the same on
+every server of the network.
+
+### Install
+
+1. Use a Paper 26.1 server on Java 25 and install [Vault](https://github.com/MilkBowl/Vault) in `plugins/`.
+2. Copy `coloeus-paper-<version>.jar` from the GitHub release into `plugins/`.
+3. Start the server once. It creates `plugins/Coloeus/config.yml`. Set `url`, `tenant-id` and `client-id` there, and
+   set the secret in the environment variable `COLOEUS_CLIENT_SECRET` (see below).
+4. Restart the server. The log line `Vault economy <CODE> registered at Highest priority` confirms the bridge. A missing
+   value disables the plugin with a line that names it; the server then keeps its previous economy.
+
+### Configuration
+
+Each key of `plugins/Coloeus/config.yml` has an environment variable of the same meaning. The variable wins when it is
+set and not blank.
+
+| Config key      | Environment variable    | Required | Default                                                | Meaning                                              |
+|-----------------|-------------------------|----------|--------------------------------------------------------|------------------------------------------------------|
+| `url`           | `COLOEUS_URL`           | yes      | none                                                   | Base URL of the Coloeus API                          |
+| `tenant-id`     | `COLOEUS_TENANT_ID`     | yes      | none                                                   | Entra tenant of the Coloeus API (GUID or domain)     |
+| `client-id`     | `COLOEUS_CLIENT_ID`     | yes      | none                                                   | Client id of this server's Entra app registration    |
+| `client-secret` | `COLOEUS_CLIENT_SECRET` | yes      | none                                                   | Secret of that app registration; prefer the variable |
+| `auth-scope`    | `COLOEUS_AUTH_SCOPE`    | no       | `api://e6ba3e14-7b03-4792-b6aa-d963f776bd0c/.default`  | Scope of the access token                            |
+
+### Register the server in Coloeus
+
+Each server needs an Entra app registration with the app role `Coloeus.Client`. An admin then registers its client id
+with Coloeus and grants it the rights of the bridge on the default currency (`COINS` below, use your default code):
+
+```shell
+# Register the client (admin token required)
+curl -X POST "$COLOEUS_URL/v1/clients" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" -H "Content-Type: application/json" \
+  -d '{"clientId": "<client-id>", "displayName": "Paper lobby 1"}'
+
+# Replace the grants of the client: MINT and BURN for deposits and withdrawals, READ for balances
+curl -X PUT "$COLOEUS_URL/v1/clients/<client-id>/grants" \
+  -H "Authorization: Bearer $ADMIN_TOKEN" -H "Content-Type: application/json" \
+  -d '[{"currency": "COINS", "permission": "MINT"},
+       {"currency": "COINS", "permission": "BURN"},
+       {"currency": "COINS", "permission": "READ"}]'
+```
+
+The grants replace all previous grants of the client. Without `MINT` a deposit answers `FAILURE`; without `BURN` a
+withdrawal does; without `READ` balances cannot be read.
+
+### Limits
+
+- Banks are not supported: `hasBankSupport()` is `false` and bank calls answer `NOT_IMPLEMENTED`.
+- A balance changed on another server can be up to 30 seconds old on this server.
+- Deposits and withdrawals wait for Coloeus on the server thread, for at most one second per call.
+- Only the default currency is served; the default currency is read at startup, so a change needs a restart.
+
 ## License
 
 AGPL-3.0, see [LICENSE](LICENSE).

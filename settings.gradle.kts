@@ -47,6 +47,16 @@ dependencyResolutionManagement {
         create("libs") {
             version("micronaut", "5.0.2")
 
+            version("moneta", "1.4.5")
+            version("money-api", "1.1")
+            version("archunit", "1.5.1")
+
+            library("money-api", "javax.money", "money-api").versionRef("money-api")
+            library("moneta-core", "org.javamoney.moneta", "moneta-core").versionRef("moneta")
+            library("archunit-junit5", "com.tngtech.archunit", "archunit-junit5").versionRef("archunit")
+            // Version managed by the Micronaut platform BOM (mn.boms.testcontainers).
+            library("testcontainers-junit-jupiter", "org.testcontainers", "testcontainers-junit-jupiter").withoutVersion()
+
             plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
             plugin("micronaut.aot", "io.micronaut.aot").versionRef("micronaut")
         }

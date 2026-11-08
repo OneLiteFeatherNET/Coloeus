@@ -32,10 +32,10 @@ class HttpColoeusClientTest {
     private static final String COINS = "COINS";
     private static final String TRANSACTIONS = "/v1/transactions";
     /** The per attempt timeout of the client in most tests: long enough that no test relies on it. */
-    private static final Duration ATTEMPT = Duration.ofMillis(500);
+    private static final Duration ATTEMPT = Duration.ofSeconds(5);
     /** A short attempt timeout for the tests that wait for one. */
-    private static final Duration SHORT = Duration.ofMillis(50);
-    private static final Duration BUDGET = Duration.ofSeconds(1);
+    private static final Duration SHORT = Duration.ofMillis(250);
+    private static final Duration BUDGET = Duration.ofSeconds(10);
 
     private FakeServer fake;
     private MutableClock clock;

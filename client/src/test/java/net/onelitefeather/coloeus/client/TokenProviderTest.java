@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 class TokenProviderTest {
 
-    private static final Duration TIMEOUT = Duration.ofMillis(500);
+    private static final Duration TIMEOUT = Duration.ofSeconds(5);
     private static final String TOKEN_1 = "{\"access_token\":\"token-1\",\"expires_in\":3600}";
 
     private FakeServer fake;

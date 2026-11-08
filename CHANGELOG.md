@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/OneLiteFeatherNET/Coloeus/compare/v0.2.2...v0.2.3) (2026-11-08)
+
+
+### Bug Fixes
+
+* **vault:** register the economy while plugins load ([#13](https://github.com/OneLiteFeatherNET/Coloeus/issues/13)) ([9ae57dd](https://github.com/OneLiteFeatherNET/Coloeus/commit/9ae57ddc3ff5aa87342a44f1f1d796c0164f44e7))
+
 ## [0.2.2](https://github.com/OneLiteFeatherNET/Coloeus/compare/v0.2.1...v0.2.2) (2026-11-08)
 
 

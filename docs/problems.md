@@ -165,6 +165,28 @@ The codes below are stable. A new code is added here in the same change that use
 - Meaning: The name is not in the register and the Mojang profile API failed or did not answer in time. The service
   stores nothing and answers no guess; retry later.
 
+## SESSION_REQUIRED
+
+- Status: 401
+- Title: Staff session required
+- Meaning: A call under `/admin/api` has no valid staff session: the cookie is missing, unknown, past its 8 hour
+  lifetime or past its 30 minute idle timeout. The session is deleted when it is found expired. A bearer token of a
+  service is not a staff session and gets this answer too.
+
+## CSRF_INVALID
+
+- Status: 403
+- Title: CSRF check failed
+- Meaning: A staff write (or the staff logout) lacks the `X-CSRF-Token` header of its session, or its `Origin` header
+  is missing or is not the staff UI's origin. Nothing is changed.
+
+## NOT_FOUND
+
+- Status: 404
+- Title: Not found
+- Meaning: A path under `/admin/api/` names no endpoint of the staff API. The staff UI's server answers it without
+  calling the backend. The backend answers unknown paths under `/v1/staff` with its own framework answer.
+
 ## NOTHING_TO_RESET
 
 - Status: 409

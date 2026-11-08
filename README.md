@@ -51,6 +51,26 @@ message names the variable.
 | `COLOEUS_MOJANG_URL`        | no       | `https://api.mojang.com`   | Base URL of the Mojang profile API used for name lookups (read timeout 2 s).            |
 | `PORT`                      | no       | `8080`                     | HTTP port of the service.                                                               |
 
+### Staff API
+
+The staff API under `/v1/staff` serves the staff web interface (`web/`). Its Nitro server is the only client: it signs
+the staff members in, keeps their sessions and forwards their calls. The backend keeps no session, reads no cookie and
+serves no UI file. Each call carries the bearer token of the staff member, a delegated user token of the staff web app
+registration with the scope `Coloeus.Access`.
+
+- Client-credential tokens are refused on `/v1/staff` with 401 `UNAUTHORIZED`, as are tokens without `oid`.
+- Reads (`GET`) need the app role `Coloeus.Moderator` or `Coloeus.Admin`. Writes (`POST`, `PUT`) need `Coloeus.Admin`;
+  a moderator's write is answered 403 `FORBIDDEN_ROLE` before its body is read.
+- Every write needs an `Idempotency-Key` header. Keys are scoped per staff member (`staff:<oid>`), so two staff members
+  may use the same key.
+- The actor of a write is the `oid` of the token and its display name the `name` claim. Money writes are journal
+  transactions of the kinds `RESET` and `ADJUST`; every staff write also has a row in `staff_action`.
+- The staff web app's client id is never a registered ledger client. Its tokens therefore cannot write on `/v1`
+  (`CLIENT_NOT_REGISTERED`). Never register that client id, neither through `/v1/clients` nor through `/v1/staff/clients`.
+
+The endpoints and JSON shapes are specified in `openspec/changes/add-admin-web/specs/staff-api/spec.md`; the paths of
+`/v1/staff` are part of the OpenAPI document at `/swagger/coloeus.yml`. The staff API reads no setting of its own.
+
 ## Paper (Vault bridge)
 
 The `paper` module is a Paper plugin that registers the default currency of Coloeus as the Vault economy of a server.

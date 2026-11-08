@@ -19,7 +19,9 @@ export default defineNuxtConfig({
   devtools: { enabled: false },
   ssr: false,
   modules: ['@vueuse/nuxt', '@nuxt/eslint'],
-  css: ['~/assets/css/main.css'],
+  // The self-hosted Roboto Flex is bundled into _nuxt/ (no external font request; font-src 'self'). The generated
+  // theme (md3-theme.css) defines the color roles that main.css maps to Tailwind utilities.
+  css: ['@fontsource-variable/roboto-flex/index.css', '~/assets/css/md3-theme.css', '~/assets/css/main.css'],
   app: {
     baseURL: '/admin/',
     buildAssetsDir: '_nuxt/',

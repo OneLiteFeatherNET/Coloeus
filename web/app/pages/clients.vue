@@ -69,7 +69,7 @@ onMounted(load)
     </template>
   </AppPageHeader>
 
-  <p v-if="!staff.canWrite.value" class="text-(--c-muted)">
+  <p v-if="!staff.canWrite.value" class="text-on-surface-variant">
     {{ de.app.readOnlyNote }}
   </p>
   <AppStatus :message="failure" tone="error" />
@@ -81,7 +81,7 @@ onMounted(load)
     <template #cell="{ row, column }">
       <AppButton
         v-if="column === 'actions'"
-        variant="secondary"
+        variant="outlined"
         :disabled="!staff.canWrite.value"
         @click="editGrants(String(row.actions))"
       >

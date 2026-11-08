@@ -91,7 +91,7 @@ async function submit() {
           :id="id"
           v-model="currency"
           :aria-describedby="describedby"
-          class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3"
+          class="md-field"
         >
           <option :value="ALL">
             {{ de.reset.allCurrencies }}
@@ -102,7 +102,7 @@ async function submit() {
         </select>
       </AppFormField>
 
-      <div class="rounded-lg bg-(--c-disabled-bg) p-3" aria-live="polite">
+      <div class="rounded-md bg-surface-container-highest p-3" aria-live="polite">
         <p v-if="previewLines.length === 0">
           {{ de.reset.previewNone }}
         </p>
@@ -121,14 +121,14 @@ async function submit() {
           maxlength="400"
           :aria-invalid="invalid"
           :aria-describedby="describedby"
-          class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3"
+          class="md-field"
         >
       </AppFormField>
 
       <AppStatus v-if="failure" :message="failure" tone="error" />
 
       <div class="flex flex-wrap justify-end gap-3">
-        <AppButton variant="secondary" @click="emit('close')">
+        <AppButton variant="outlined" @click="emit('close')">
           {{ de.reset.cancel }}
         </AppButton>
         <AppButton type="submit" variant="danger" :disabled="!valid || busy">

@@ -1,71 +1,134 @@
 @import "tailwindcss";
 
 /*
- * Design tokens. Every color is a token on :root. The dark theme redefines them twice: once for
- * `prefers-color-scheme: dark` unless the page asks for light, and once for an explicit dark theme.
- * Text pairs reach at least 4.5:1 contrast in both themes. Created and destroyed money are told apart by
- * a label and a pattern as well as by color.
+ * Material Design 3 on Tailwind 4. The color roles are generated into md3-theme.css (`pnpm theme`) as
+ * --md-sys-color-* custom properties for light and dark; this block exposes them as utilities (bg-primary,
+ * text-on-surface-variant, ...). Type scale, shape, elevation and window size classes follow the MD3 values.
  */
-:root:not([data-theme="dark"]) {
-  --c-bg: #f5f6f8;
-  --c-surface: #ffffff;
-  --c-text: #161a22;
-  --c-muted: #4a5263;
-  --c-border: #8a93a3;
-  --c-accent: #1f4fbf;
-  --c-accent-text: #ffffff;
-  --c-danger: #a11d1d;
-  --c-danger-bg: #fdecec;
-  --c-success: #1d6b3a;
-  --c-success-bg: #e8f5ec;
-  --c-focus: #0b57d0;
-  --c-created: #1f4fbf;
-  --c-destroyed: #9a4a00;
-  --c-disabled: #5e6676;
-  --c-disabled-bg: #e4e7ed;
-  color-scheme: light;
+@theme {
+  --color-primary: var(--md-sys-color-primary);
+  --color-on-primary: var(--md-sys-color-on-primary);
+  --color-primary-container: var(--md-sys-color-primary-container);
+  --color-on-primary-container: var(--md-sys-color-on-primary-container);
+  --color-inverse-primary: var(--md-sys-color-inverse-primary);
+  --color-secondary: var(--md-sys-color-secondary);
+  --color-on-secondary: var(--md-sys-color-on-secondary);
+  --color-secondary-container: var(--md-sys-color-secondary-container);
+  --color-on-secondary-container: var(--md-sys-color-on-secondary-container);
+  --color-tertiary: var(--md-sys-color-tertiary);
+  --color-on-tertiary: var(--md-sys-color-on-tertiary);
+  --color-tertiary-container: var(--md-sys-color-tertiary-container);
+  --color-on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+  --color-error: var(--md-sys-color-error);
+  --color-on-error: var(--md-sys-color-on-error);
+  --color-error-container: var(--md-sys-color-error-container);
+  --color-on-error-container: var(--md-sys-color-on-error-container);
+  --color-surface: var(--md-sys-color-surface);
+  --color-surface-dim: var(--md-sys-color-surface-dim);
+  --color-surface-bright: var(--md-sys-color-surface-bright);
+  --color-surface-container-lowest: var(--md-sys-color-surface-container-lowest);
+  --color-surface-container-low: var(--md-sys-color-surface-container-low);
+  --color-surface-container: var(--md-sys-color-surface-container);
+  --color-surface-container-high: var(--md-sys-color-surface-container-high);
+  --color-surface-container-highest: var(--md-sys-color-surface-container-highest);
+  --color-on-surface: var(--md-sys-color-on-surface);
+  --color-on-surface-variant: var(--md-sys-color-on-surface-variant);
+  --color-outline: var(--md-sys-color-outline);
+  --color-outline-variant: var(--md-sys-color-outline-variant);
+  --color-inverse-surface: var(--md-sys-color-inverse-surface);
+  --color-inverse-on-surface: var(--md-sys-color-inverse-on-surface);
+  --color-scrim: var(--md-sys-color-scrim);
+  --color-shadow: var(--md-sys-color-shadow);
+
+  --font-sans: "Roboto Flex Variable", "Roboto Flex", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* MD3 type scale: size, line height, tracking and weight of each role. */
+  --text-display-large: 3.5625rem;
+  --text-display-large--line-height: 4rem;
+  --text-display-large--letter-spacing: -0.015625rem;
+  --text-display-large--font-weight: 400;
+  --text-display-medium: 2.8125rem;
+  --text-display-medium--line-height: 3.25rem;
+  --text-display-medium--letter-spacing: 0;
+  --text-display-medium--font-weight: 400;
+  --text-display-small: 2.25rem;
+  --text-display-small--line-height: 2.75rem;
+  --text-display-small--letter-spacing: 0;
+  --text-display-small--font-weight: 400;
+  --text-headline-large: 2rem;
+  --text-headline-large--line-height: 2.5rem;
+  --text-headline-large--letter-spacing: 0;
+  --text-headline-large--font-weight: 400;
+  --text-headline-medium: 1.75rem;
+  --text-headline-medium--line-height: 2.25rem;
+  --text-headline-medium--letter-spacing: 0;
+  --text-headline-medium--font-weight: 400;
+  --text-headline-small: 1.5rem;
+  --text-headline-small--line-height: 2rem;
+  --text-headline-small--letter-spacing: 0;
+  --text-headline-small--font-weight: 400;
+  --text-title-large: 1.375rem;
+  --text-title-large--line-height: 1.75rem;
+  --text-title-large--letter-spacing: 0;
+  --text-title-large--font-weight: 400;
+  --text-title-medium: 1rem;
+  --text-title-medium--line-height: 1.5rem;
+  --text-title-medium--letter-spacing: 0.009375rem;
+  --text-title-medium--font-weight: 500;
+  --text-title-small: 0.875rem;
+  --text-title-small--line-height: 1.25rem;
+  --text-title-small--letter-spacing: 0.00625rem;
+  --text-title-small--font-weight: 500;
+  --text-body-large: 1rem;
+  --text-body-large--line-height: 1.5rem;
+  --text-body-large--letter-spacing: 0.03125rem;
+  --text-body-large--font-weight: 400;
+  --text-body-medium: 0.875rem;
+  --text-body-medium--line-height: 1.25rem;
+  --text-body-medium--letter-spacing: 0.015625rem;
+  --text-body-medium--font-weight: 400;
+  --text-body-small: 0.75rem;
+  --text-body-small--line-height: 1rem;
+  --text-body-small--letter-spacing: 0.025rem;
+  --text-body-small--font-weight: 400;
+  --text-label-large: 0.875rem;
+  --text-label-large--line-height: 1.25rem;
+  --text-label-large--letter-spacing: 0.00625rem;
+  --text-label-large--font-weight: 500;
+  --text-label-medium: 0.75rem;
+  --text-label-medium--line-height: 1rem;
+  --text-label-medium--letter-spacing: 0.03125rem;
+  --text-label-medium--font-weight: 500;
+  --text-label-small: 0.6875rem;
+  --text-label-small--line-height: 1rem;
+  --text-label-small--letter-spacing: 0.03125rem;
+  --text-label-small--font-weight: 500;
+
+  /* Shape scale. */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 28px;
+
+  /* Elevation levels 0 to 5: a surface container tone plus a shadow (level 0 has none). */
+  --shadow-elevation-1: 0 1px 2px color-mix(in srgb, var(--md-sys-color-shadow) 30%, transparent), 0 1px 3px 1px color-mix(in srgb, var(--md-sys-color-shadow) 15%, transparent);
+  --shadow-elevation-2: 0 1px 2px color-mix(in srgb, var(--md-sys-color-shadow) 30%, transparent), 0 2px 6px 2px color-mix(in srgb, var(--md-sys-color-shadow) 15%, transparent);
+  --shadow-elevation-3: 0 1px 3px color-mix(in srgb, var(--md-sys-color-shadow) 30%, transparent), 0 4px 8px 3px color-mix(in srgb, var(--md-sys-color-shadow) 15%, transparent);
+  --shadow-elevation-4: 0 2px 3px color-mix(in srgb, var(--md-sys-color-shadow) 30%, transparent), 0 6px 10px 4px color-mix(in srgb, var(--md-sys-color-shadow) 15%, transparent);
+  --shadow-elevation-5: 0 4px 4px color-mix(in srgb, var(--md-sys-color-shadow) 30%, transparent), 0 8px 12px 6px color-mix(in srgb, var(--md-sys-color-shadow) 15%, transparent);
+
+  /* Window size classes: compact below 600px, medium from 600px (md), expanded from 840px (lg). */
+  --breakpoint-md: 600px;
+  --breakpoint-lg: 840px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --c-bg: #0f1218;
-    --c-surface: #181d26;
-    --c-text: #f2f4f8;
-    --c-muted: #c3cad8;
-    --c-border: #8d97a8;
-    --c-accent: #8fb0ff;
-    --c-accent-text: #0f1218;
-    --c-danger: #ffb4b4;
-    --c-danger-bg: #3a1717;
-    --c-success: #9fe0b5;
-    --c-success-bg: #14301f;
-    --c-focus: #c7d8ff;
-    --c-created: #8fb0ff;
-    --c-destroyed: #ffc27a;
-    --c-disabled: #aab2c2;
-    --c-disabled-bg: #262c38;
-    color-scheme: dark;
-  }
-}
-
-:root[data-theme="dark"] {
-  --c-bg: #0f1218;
-  --c-surface: #181d26;
-  --c-text: #f2f4f8;
-  --c-muted: #c3cad8;
-  --c-border: #8d97a8;
-  --c-accent: #8fb0ff;
-  --c-accent-text: #0f1218;
-  --c-danger: #ffb4b4;
-  --c-danger-bg: #3a1717;
-  --c-success: #9fe0b5;
-  --c-success-bg: #14301f;
-  --c-focus: #c7d8ff;
-  --c-created: #8fb0ff;
-  --c-destroyed: #ffc27a;
-  --c-disabled: #aab2c2;
-  --c-disabled-bg: #262c38;
-  color-scheme: dark;
+/* Motion tokens: standard and emphasized easing, short and medium durations. */
+:root {
+  --md-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-motion-easing-emphasized: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --md-motion-duration-short: 150ms;
+  --md-motion-duration-medium: 300ms;
 }
 
 html {
@@ -73,17 +136,125 @@ html {
 }
 
 body {
-  background: var(--c-bg);
-  color: var(--c-text);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.5;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font-family: "Roboto Flex Variable", "Roboto Flex", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  letter-spacing: 0.03125rem;
   min-width: 320px;
   overflow-x: hidden;
 }
 
+/* The MD3 focus indicator: visible on keyboard focus only (:focus-visible), in the primary role. */
 :focus-visible {
-  outline: 3px solid var(--c-focus);
+  outline: 3px solid var(--md-sys-color-primary);
   outline-offset: 2px;
+}
+
+/*
+ * State layers: an overlay in the color of the content on the ::before pseudo-element. Hover 8 percent, focus and
+ * pressed 10 percent. The hover state applies only where a pointer can hover.
+ */
+.md-state {
+  position: relative;
+  isolation: isolate;
+}
+
+.md-state::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-motion-duration-short) var(--md-motion-easing-standard);
+}
+
+@media (hover: hover) {
+  .md-state:not(:disabled):hover::before {
+    opacity: 0.08;
+  }
+}
+
+.md-state:not(:disabled):focus-visible::before,
+.md-state:not(:disabled):active::before {
+  opacity: 0.1;
+}
+
+/* An outlined text field or select: the outline role, 4px corners, the primary role on focus, the error role when
+   the control is marked invalid. */
+.md-field {
+  display: block;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: 4px;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+  font: inherit;
+}
+
+.md-field:focus {
+  border-color: var(--md-sys-color-primary);
+  box-shadow: inset 0 0 0 1px var(--md-sys-color-primary);
+}
+
+.md-field[aria-invalid="true"] {
+  border-color: var(--md-sys-color-error);
+  box-shadow: inset 0 0 0 1px var(--md-sys-color-error);
+}
+
+.md-field:disabled {
+  opacity: 0.38;
+}
+
+/* A switch: a track of 52 by 32 pixels with a thumb that moves to the primary role when checked. */
+.md-switch {
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 32px;
+  border: 2px solid var(--md-sys-color-outline);
+  border-radius: 9999px;
+  background: var(--md-sys-color-surface-container-highest);
+  cursor: pointer;
+  transition: background-color var(--md-motion-duration-short) var(--md-motion-easing-standard);
+}
+
+.md-switch::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: var(--md-sys-color-outline);
+  transition: left var(--md-motion-duration-short) var(--md-motion-easing-standard),
+    width var(--md-motion-duration-short) var(--md-motion-easing-standard);
+}
+
+.md-switch:checked {
+  background: var(--md-sys-color-primary);
+  border-color: var(--md-sys-color-primary);
+}
+
+.md-switch:checked::after {
+  top: 2px;
+  left: 24px;
+  width: 24px;
+  height: 24px;
+  background: var(--md-sys-color-on-primary);
+}
+
+.md-switch:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
 }
 
 .sr-only-focusable:not(:focus) {

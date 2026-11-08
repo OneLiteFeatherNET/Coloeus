@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, useId } from 'vue'
+import AppIcon from './AppIcon.vue'
 
-// A labelled form control. The control gets the id and the `aria-describedby` through the slot; the hint and the
-// error are linked to it. The texts come in as props.
+// A labelled form control in an outlined text field style. The control gets the id, the `aria-describedby` and the
+// invalid state through the slot; the supporting text and the error text are linked to it. The texts come in as props.
 const props = defineProps<{
   label: string
   hint?: string
@@ -27,13 +28,14 @@ const describedBy = computed(() => {
 
 <template>
   <div class="flex flex-col gap-1">
-    <label :for="id" class="font-medium">{{ label }}</label>
+    <label :for="id" class="text-label-large text-on-surface">{{ label }}</label>
     <slot :id="id" :describedby="describedBy" :invalid="Boolean(error)" />
-    <p v-if="hint" :id="hintId" class="text-sm text-(--c-muted)">
+    <p v-if="hint" :id="hintId" class="text-body-small text-on-surface-variant">
       {{ hint }}
     </p>
-    <p v-if="error" :id="errorId" class="text-sm font-medium text-(--c-danger)">
-      {{ error }}
+    <p v-if="error" :id="errorId" class="flex items-start gap-1 text-body-small text-error">
+      <AppIcon name="error" class="size-4" />
+      <span>{{ error }}</span>
     </p>
   </div>
 </template>

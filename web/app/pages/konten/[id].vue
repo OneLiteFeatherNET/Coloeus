@@ -104,8 +104,8 @@ onMounted(async () => {
   <template v-else-if="account">
     <AppPageHeader :title="de.titles.account" :description="de.kinds.account[account.kind] ?? account.kind" />
 
-    <section class="flex flex-col gap-3 rounded-lg border border-(--c-border) bg-(--c-surface) p-4" aria-labelledby="account-owner">
-      <h2 id="account-owner" class="text-lg font-semibold">
+    <section class="flex flex-col gap-3 rounded-md bg-surface-container-low p-4 shadow-elevation-1" aria-labelledby="account-owner">
+      <h2 id="account-owner" class="text-title-medium">
         {{ de.account.owner }}
       </h2>
       <dl v-if="account.owner" class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
@@ -114,19 +114,19 @@ onMounted(async () => {
         <dt class="font-medium">{{ de.account.ownerUuid }}</dt>
         <dd class="break-all font-mono text-sm">{{ account.owner.uuid }}</dd>
       </dl>
-      <p v-else class="text-(--c-muted)">
+      <p v-else class="text-on-surface-variant">
         {{ de.account.noOwner }}
       </p>
-      <p v-if="account.client" class="text-(--c-muted)">
+      <p v-if="account.client" class="text-on-surface-variant">
         {{ de.account.client }}: {{ account.client.displayName }}
       </p>
-      <p v-if="account.currency" class="text-(--c-muted)">
+      <p v-if="account.currency" class="text-on-surface-variant">
         {{ de.account.currency }}: {{ account.currency }}
       </p>
     </section>
 
     <section class="flex flex-col gap-3" aria-labelledby="account-balances">
-      <h2 id="account-balances" class="text-lg font-semibold">
+      <h2 id="account-balances" class="text-title-medium">
         {{ de.account.balances }}
       </h2>
       <AppEmptyState v-if="account.balances.length === 0">
@@ -136,7 +136,7 @@ onMounted(async () => {
         <li
           v-for="balance in account.balances"
           :key="balance.currency"
-          class="flex justify-between gap-3 rounded-lg border border-(--c-border) bg-(--c-surface) p-3"
+          class="flex justify-between gap-3 rounded-md bg-surface-container-low p-3 shadow-elevation-1"
         >
           <span class="font-medium">{{ balance.currency }}</span>
           <AppMoney :amount="balance.amount" :currency="balance.currency" :fraction-digits="digitsOf(balance.currency)" />
@@ -145,17 +145,17 @@ onMounted(async () => {
     </section>
 
     <section v-if="isPlayer" class="flex flex-col gap-3" aria-labelledby="account-actions">
-      <h2 id="account-actions" class="text-lg font-semibold">
+      <h2 id="account-actions" class="text-title-medium">
         {{ de.account.reset }} / {{ de.account.adjust }}
       </h2>
-      <p v-if="!staff.canWrite.value" class="text-(--c-muted)">
+      <p v-if="!staff.canWrite.value" class="text-on-surface-variant">
         {{ de.app.readOnlyNote }}
       </p>
       <div class="flex flex-wrap gap-3">
         <AppButton variant="danger" :disabled="!writable" @click="resetOpen = true">
           {{ de.account.reset }}
         </AppButton>
-        <AppButton variant="secondary" :disabled="!writable" @click="adjustOpen = true">
+        <AppButton variant="outlined" :disabled="!writable" @click="adjustOpen = true">
           {{ de.account.adjust }}
         </AppButton>
       </div>
@@ -175,12 +175,12 @@ onMounted(async () => {
         @done="reload"
       />
     </section>
-    <p v-else class="text-(--c-muted)">
+    <p v-else class="text-on-surface-variant">
       {{ de.account.notPlayer }}
     </p>
 
     <section class="flex flex-col gap-3" aria-labelledby="account-history">
-      <h2 id="account-history" class="text-lg font-semibold">
+      <h2 id="account-history" class="text-title-medium">
         {{ de.account.history }}
       </h2>
       <AppEmptyState v-if="postings.length === 0">
@@ -200,11 +200,11 @@ onMounted(async () => {
         </template>
       </AppTable>
       <div v-if="nextCursor" class="flex justify-start">
-        <AppButton variant="secondary" @click="loadHistory(true)">
+        <AppButton variant="outlined" @click="loadHistory(true)">
           {{ de.account.loadMore }}
         </AppButton>
       </div>
-      <p v-else-if="postings.length > 0" class="text-(--c-muted)">
+      <p v-else-if="postings.length > 0" class="text-on-surface-variant">
         {{ de.account.noMore }}
       </p>
     </section>

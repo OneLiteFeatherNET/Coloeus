@@ -6,7 +6,7 @@ import { de } from '~/i18n/de'
 
 <template>
   <div class="flex min-h-dvh flex-col">
-    <a href="#main" class="sr-only-focusable rounded-lg bg-(--c-accent) px-4 py-2 text-(--c-accent-text)">
+    <a href="#main" class="sr-only-focusable rounded-md bg-primary px-4 py-2 text-on-primary">
       {{ de.app.skipToContent }}
     </a>
     <main id="main" tabindex="-1" class="mx-auto flex w-full max-w-xl flex-1 flex-col justify-center gap-6 px-4 py-10">

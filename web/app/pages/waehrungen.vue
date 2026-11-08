@@ -94,7 +94,7 @@ onMounted(load)
     </template>
   </AppPageHeader>
 
-  <p v-if="!staff.canWrite.value" class="text-(--c-muted)">
+  <p v-if="!staff.canWrite.value" class="text-on-surface-variant">
     {{ de.app.readOnlyNote }}
   </p>
   <AppStatus :message="failure" tone="error" />
@@ -107,7 +107,7 @@ onMounted(load)
       <template v-if="column === 'actions'">
         <AppButton
           v-if="!row.isDefault"
-          variant="secondary"
+          variant="outlined"
           :disabled="!staff.canWrite.value"
           @click="pending = currencies.find(item => item.code === row.code) ?? null"
         >
@@ -129,7 +129,7 @@ onMounted(load)
     @close="pending = null"
   >
     <div class="flex flex-wrap justify-end gap-3">
-      <AppButton variant="secondary" @click="pending = null">
+      <AppButton variant="outlined" @click="pending = null">
         {{ de.common.cancel }}
       </AppButton>
       <AppButton :disabled="busy" @click="setDefault">

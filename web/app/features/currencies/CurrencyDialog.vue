@@ -89,17 +89,17 @@ async function submit() {
           autocomplete="off"
           :aria-invalid="invalid"
           :aria-describedby="describedby"
-          class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3 font-mono"
+          class="md-field font-mono"
         >
       </AppFormField>
       <AppFormField v-slot="{ id, describedby, invalid }" :label="de.currencies.nameSingular" :error="singularError">
-        <input :id="id" v-model="nameSingular" type="text" :aria-invalid="invalid" :aria-describedby="describedby" class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3">
+        <input :id="id" v-model="nameSingular" type="text" :aria-invalid="invalid" :aria-describedby="describedby" class="md-field">
       </AppFormField>
       <AppFormField v-slot="{ id, describedby, invalid }" :label="de.currencies.namePlural" :error="pluralError">
-        <input :id="id" v-model="namePlural" type="text" :aria-invalid="invalid" :aria-describedby="describedby" class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3">
+        <input :id="id" v-model="namePlural" type="text" :aria-invalid="invalid" :aria-describedby="describedby" class="md-field">
       </AppFormField>
       <AppFormField v-slot="{ id, describedby, invalid }" :label="de.currencies.symbol" :error="symbolError">
-        <input :id="id" v-model="symbol" type="text" :aria-invalid="invalid" :aria-describedby="describedby" class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3">
+        <input :id="id" v-model="symbol" type="text" :aria-invalid="invalid" :aria-describedby="describedby" class="md-field">
       </AppFormField>
       <AppFormField v-slot="{ id, describedby, invalid }" :label="de.currencies.fractionDigits" :hint="de.currencies.fractionHint" :error="digitsError">
         <input
@@ -109,12 +109,12 @@ async function submit() {
           inputmode="numeric"
           :aria-invalid="invalid"
           :aria-describedby="describedby"
-          class="min-h-11 rounded-lg border border-(--c-border) bg-(--c-surface) px-3"
+          class="md-field"
         >
       </AppFormField>
       <AppStatus v-if="failure" :message="failure" tone="error" />
       <div class="flex flex-wrap justify-end gap-3">
-        <AppButton variant="secondary" @click="emit('close')">
+        <AppButton variant="outlined" @click="emit('close')">
           {{ de.common.cancel }}
         </AppButton>
         <AppButton type="submit" :disabled="!valid || busy">

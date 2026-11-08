@@ -16,7 +16,8 @@ export const de = {
     notFoundTitle: 'Seite nicht gefunden',
     notFoundText: 'Die Adresse existiert nicht oder ist nicht mehr gültig.',
     backToStart: 'Zur Übersicht',
-    unknownError: 'Die Anfrage ist fehlgeschlagen.'
+    unknownError: 'Die Anfrage ist fehlgeschlagen.',
+    dismissMessage: 'Meldung schließen'
   },
   nav: {
     overview: 'Übersicht',

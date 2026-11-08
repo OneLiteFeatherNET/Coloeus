@@ -4,6 +4,70 @@ micronaut:
   server:
     # HTTP port of the service.
     port: ${PORT:8080}
+  security:
+    # Resource server only: Entra ID app-only bearer tokens, no login flow, no session. A route without a @Secured
+    # rule is refused. Tokens are checked against the tenant's JWKS, issuer and audience (see the coloeus.auth block).
+    authentication: bearer
+    token:
+      jwt:
+        signatures:
+          jwks:
+            entra:
+              url: https://login.microsoftonline.com/${coloeus.auth.tenant-id}/discovery/v2.0/keys
+        claims-validators:
+          issuer: https://login.microsoftonline.com/${coloeus.auth.tenant-id}/v2.0
+          audience: ${coloeus.auth.audience}
+    intercept-url-map:
+      - pattern: /health
+        access:
+          - isAnonymous()
+      - pattern: /health/**
+        access:
+          - isAnonymous()
+      - pattern: /swagger/**
+        access:
+          - isAnonymous()
+  http:
+    services:
+      mojang:
+        # Mojang profile API (name to UUID). A slow answer counts as unavailable, see NAME_LOOKUP_UNAVAILABLE.
+        url: ${coloeus.mojang.url}
+        read-timeout: 2s
+  router:
+    static-resources:
+      swagger:
+        enabled: true
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+
+# Entra ID tenant and API audience. No defaults: the service does not start without them (RequiredSettingsGuard).
+coloeus:
+  auth:
+    # The Entra tenant (directory) id; the JWKS and the issuer are derived from it.
+    tenant-id: ${COLOEUS_TENANT_ID}
+    # The API app registration's client id, as it appears in "aud" of the access token.
+    audience: ${COLOEUS_AUDIENCE}
+  mojang:
+    # Base URL of the Mojang profile API, for name lookups that the register cannot answer.
+    url: ${COLOEUS_MOJANG_URL:`https://api.mojang.com`}
+
+# The database has no defaults: a missing setting fails the start-up. Local values live in application-dev.yml.
+datasources:
+  default:
+    url: ${DATASOURCES_DEFAULT_URL}
+    username: ${DATASOURCES_DEFAULT_USERNAME}
+    password: ${DATASOURCES_DEFAULT_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    db-type: postgresql
+    # Milliseconds a request or the readiness probe waits for a pooled connection. Hikari's default of 30 s would
+    # keep a probe hanging while the database is down; this fails it fast instead.
+    connection-timeout: 3000
+
+flyway:
+  datasources:
+    default:
+      # Forward-only migrations from db/migration; Flyway locks the schema history, so parallel replicas are safe.
+      enabled: true
 
 endpoints:
   all:

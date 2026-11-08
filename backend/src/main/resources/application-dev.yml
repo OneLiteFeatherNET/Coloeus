@@ -1,0 +1,12 @@
+# Local development (docker compose + ./gradlew :backend:run). Values are only for the dev environment.
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/coloeus
+    username: coloeus
+    # Export DATASOURCES_DEFAULT_PASSWORD with the password from docker/docker-compose.yml before running.
+    password: ${DATASOURCES_DEFAULT_PASSWORD}
+coloeus:
+  auth:
+    # Placeholders: no Entra tenant is reachable locally, so no real token passes the bearer check in dev.
+    tenant-id: ${COLOEUS_TENANT_ID:`00000000-0000-0000-0000-000000000000`}
+    audience: ${COLOEUS_AUDIENCE:`coloeus-dev`}

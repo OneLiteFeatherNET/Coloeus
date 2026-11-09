@@ -80,11 +80,11 @@ async function logout() {
         <template #default="{ item }">
           <NuxtLink
             :to="item.to"
-            class="group flex flex-col items-center gap-1 py-1 text-label-medium text-on-surface"
+            class="group flex w-full flex-col items-center gap-1 py-1 text-center text-label-medium text-on-surface outline-none focus-visible:outline-none"
             :aria-current="item.active ? 'page' : undefined"
           >
             <span
-              class="md-state flex h-8 w-16 items-center justify-center rounded-full"
+              class="md-state flex h-8 w-16 items-center justify-center rounded-full group-focus-visible:outline-3 group-focus-visible:outline-offset-2 group-focus-visible:outline-primary"
               :class="item.active ? 'bg-secondary-container text-on-secondary-container' : 'text-on-surface-variant'"
             >
               <AppIcon :name="item.icon" />

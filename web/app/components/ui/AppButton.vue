@@ -44,7 +44,7 @@ const variantClasses = computed(() => {
     :type="type"
     :disabled="disabled"
     :aria-pressed="pressed === undefined ? undefined : pressed ? 'true' : 'false'"
-    class="md-state inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-full px-6 text-label-large disabled:cursor-not-allowed"
+    class="md-state inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center gap-2 rounded-full px-6 whitespace-nowrap text-label-large disabled:cursor-not-allowed"
     :class="[variantClasses, { 'aria-pressed:bg-secondary-container aria-pressed:text-on-secondary-container': pressed !== undefined && !disabled }]"
     @click="emit('click', $event)"
   >

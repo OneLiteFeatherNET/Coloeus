@@ -11,6 +11,7 @@ import { de } from '~/i18n/de'
 import type { ClientView, Currency } from '~/types/api'
 import { useStaff } from '~/composables/useStaff'
 import { errorMessage } from '~/utils/errors'
+import { groupGrants, type GrantGroup } from '~/utils/grants'
 import { browserTimeZone, formatInstant } from '~/utils/time'
 
 // Server und Rechte: the registered clients and their grants. Writes are for administrators only.
@@ -35,9 +36,7 @@ const rows = computed(() => clients.value.map(client => ({
   id: client.clientId,
   displayName: client.displayName,
   clientId: client.clientId,
-  grants: client.grants.length === 0
-    ? de.clients.noGrants
-    : client.grants.map(grant => `${grant.currency}: ${de.clients.permissions[grant.permission] ?? grant.permission}`).join(', '),
+  grants: groupGrants(client.grants, de.clients.permissions),
   createdAt: formatInstant(client.createdAt, browserTimeZone()),
   actions: client.clientId
 })))
@@ -87,6 +86,16 @@ onMounted(load)
       >
         {{ de.clients.replaceGrants }}
       </AppButton>
+      <template v-else-if="column === 'grants'">
+        <template v-if="(row.grants as GrantGroup[]).length === 0">
+          {{ de.clients.noGrants }}
+        </template>
+        <ul v-else class="flex flex-col gap-1">
+          <li v-for="group in row.grants as GrantGroup[]" :key="group.currency">
+            <span class="text-label-large">{{ group.currency }}</span>: {{ group.permissions.join(', ') }}
+          </li>
+        </ul>
+      </template>
       <template v-else>
         {{ row[column] }}
       </template>

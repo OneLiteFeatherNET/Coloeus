@@ -18,7 +18,7 @@ defineProps<{
 <template>
   <div>
     <table class="hidden w-full border-collapse text-left md:table">
-      <caption class="mb-2 text-left text-title-small text-on-surface">
+      <caption class="sr-only">
         {{ caption }}
       </caption>
       <thead>

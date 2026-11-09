@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/OneLiteFeatherNET/Coloeus/compare/v0.4.0...v0.4.1) (2026-11-09)
+
+
+### Bug Fixes
+
+* **admin:** tidy the rail, buttons, table caption and grant list ([#22](https://github.com/OneLiteFeatherNET/Coloeus/issues/22)) ([4894a4c](https://github.com/OneLiteFeatherNET/Coloeus/commit/4894a4ca0f9e176ed02edd0a42ed05ff8eeac777))
+
 ## [0.4.0](https://github.com/OneLiteFeatherNET/Coloeus/compare/v0.3.0...v0.4.0) (2026-11-08)
 
 

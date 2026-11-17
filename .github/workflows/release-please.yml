@@ -123,4 +123,6 @@ jobs:
     with:
       project-name: "Coloeus"
       project-version: ${{ needs.release-please.outputs.version }}
+      parent-uuid: "ea5a635f-b018-4bec-bee7-137608e67ff2"
+      is-latest: true
     secrets: inherit

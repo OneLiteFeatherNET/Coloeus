@@ -1,3 +1,9 @@
+import org.cyclonedx.gradle.CyclonedxDirectTask
+
+plugins {
+    alias(libs.plugins.cyclonedx)
+}
+
 // gradle.properties' `version` line carries a `# x-release-please-version` marker comment that
 // release-please rewrites on every release. Java .properties syntax only treats `#` as a comment
 // starter at the start of a line, so the raw value includes that trailing comment - strip it here.
@@ -31,5 +37,14 @@ subprojects {
                 events("passed", "skipped", "failed")
             }
         }
+    }
+}
+
+// One aggregate SBOM for the build (build/reports/cyclonedx/bom.json), composed of the Direct SBOM of every
+// subproject. Only the runtime classpath ships, so test, annotation processor and compile-only dependencies are left out.
+allprojects {
+    tasks.withType<CyclonedxDirectTask>().configureEach {
+        includeConfigs = listOf("runtimeClasspath")
+        failOnUnresolvedDependencies = true
     }
 }

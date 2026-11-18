@@ -52,6 +52,7 @@ dependencyResolutionManagement {
             version("paper", "26.1.2.build.74-stable")
             version("vaultApi", "1.7")
             version("shadow", "9.6.1")
+            version("cyclonedx", "3.6.1")
 
             library("gson", "com.google.code.gson", "gson").versionRef("gson")
             library("paper-api", "io.papermc.paper", "paper-api").versionRef("paper")
@@ -74,6 +75,7 @@ dependencyResolutionManagement {
             plugin("micronaut.application", "io.micronaut.application").versionRef("micronaut")
             plugin("micronaut.aot", "io.micronaut.aot").versionRef("micronaut")
             plugin("shadow", "com.gradleup.shadow").versionRef("shadow")
+            plugin("cyclonedx", "org.cyclonedx.bom").versionRef("cyclonedx")
         }
     }
 }

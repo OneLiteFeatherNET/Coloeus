@@ -94,7 +94,6 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       RELEASE_VERSION: ${{ needs.release-please.outputs.version }}
-      RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
     steps:
       - name: Checkout the release tag
         uses: actions/checkout@v7
@@ -113,16 +112,67 @@ jobs:
       - name: Attach the jar to the GitHub release
         run: gh release upload "${RELEASE_TAG}" paper/build/libs/coloeus-paper-*.jar --clobber
 
-  # Dependency inventory of the release, shipped to Dependency-Track. Without an artifact the reusable
-  # workflow generates the SBOM with Trivy from the checked-out tag, so no build-tool setup is needed.
+  # The Java dependency inventory is built by CycloneDX from the Gradle runtime classpath. Trivy cannot read Gradle
+  # dependencies without a gradle.lockfile, so the reusable SBOM job below publishes this file instead of a scan.
+  sbom-gradle-bom:
+    name: Build SBOM
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      RELEASE_VERSION: ${{ needs.release-please.outputs.version }}
+      RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+    steps:
+      - name: Checkout the release tag
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+      - name: Build the aggregate CycloneDX SBOM
+        env:
+          ONELITEFEATHER_MAVEN_USERNAME: ${{ secrets.ONELITEFEATHER_MAVEN_USERNAME }}
+          ONELITEFEATHER_MAVEN_PASSWORD: ${{ secrets.ONELITEFEATHER_MAVEN_PASSWORD }}
+        run: ./gradlew cyclonedxBom -Pversion="${RELEASE_VERSION}"
+      - name: Upload the SBOM
+        uses: actions/upload-artifact@v7
+        with:
+          name: sbom-gradle
+          path: build/reports/cyclonedx/bom.json
+          if-no-files-found: error
+
+  # Dependency inventory of the release, shipped to Dependency-Track. The Java SBOM comes from the sbom-gradle-bom
+  # artifact; the reusable workflow only uploads it.
   sbom:
     name: Publish SBOM
-    needs: release-please
+    needs: [release-please, sbom-gradle-bom]
     if: needs.release-please.outputs.release_created == 'true'
     uses: OneLiteFeatherNET/workflows/.github/workflows/sbom-publish.yml@v2.9.1
     with:
       project-name: "Coloeus"
       project-version: ${{ needs.release-please.outputs.version }}
+      artifact-name: "sbom-gradle"
+      sbom-path: "bom.json"
+      parent-uuid: "ea5a635f-b018-4bec-bee7-137608e67ff2"
+      is-latest: true
+    secrets: inherit
+
+  # The web UI has its own image, so its dependencies are published as a separate project. Without an artifact the
+  # reusable workflow scans the checked-out tag with Trivy, which reads web/pnpm-lock.yaml from scan-ref.
+  sbom-admin:
+    name: Publish SBOM (admin web)
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    uses: OneLiteFeatherNET/workflows/.github/workflows/sbom-publish.yml@v2.9.1
+    with:
+      project-name: "Coloeus Admin"
+      project-version: ${{ needs.release-please.outputs.version }}
+      scan-ref: web
       parent-uuid: "ea5a635f-b018-4bec-bee7-137608e67ff2"
       is-latest: true
     secrets: inherit
